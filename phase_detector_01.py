@@ -2,6 +2,7 @@ import numpy as np
 import pandas
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.layers import Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.utils import np_utils
 from sklearn.model_selection import cross_val_score
@@ -65,9 +66,13 @@ def baseline_model():
     # create model
     model = Sequential()
     model.add(Dense(12, input_dim=16, activation='relu'))
+    model.add(Dropout(0.2))
     model.add(Dense(10, activation='relu'))
+    model.add(Dropout(0.2))
     model.add(Dense(8, activation='relu'))
+    model.add(Dropout(0.2))
     model.add(Dense(6, activation='relu'))
+    model.add(Dropout(0.2))
     model.add(Dense(4, activation='softmax'))
     # Compile model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
