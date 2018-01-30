@@ -90,5 +90,3 @@ ENV/
 .idea
 
 data/
-
-*.h5

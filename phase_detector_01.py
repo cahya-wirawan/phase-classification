@@ -78,16 +78,18 @@ def baseline_model():
     model.add(Dense(4, activation='softmax'))
     # Compile model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # serialize model to YAML
+    model_yaml = model.to_yaml()
+    with open("phase_model.yaml", "w") as yaml_file:
+        yaml_file.write(model_yaml)
     return model
 
 
-file_path = "weights-improvement-{epoch:02d}-{acc:.2f}.hdf5"
-checkpoint = ModelCheckpoint(file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
+weight_file_path = "phase_weights_best.hdf5"
+checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
 
 estimator = KerasClassifier(build_fn=baseline_model, epochs=200, batch_size=100, verbose=1)
 kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-
-#grid = GridSearchCV(estimator=estimator, param_grid=param_grid, cv=kfold, fit_params=dict(callbacks=callbacks_list))
 
 results = cross_val_score(estimator, X, dummy_y, cv=kfold, fit_params={'callbacks':[checkpoint]})
 print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
