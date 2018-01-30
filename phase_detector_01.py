@@ -54,7 +54,7 @@ def phase_read(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':
 
 
 # load dataset
-X, Y = phase_read(FILENAME, STA, {'P':1000, 'S':1000, 'T':1000, 'N':1000 })
+X, Y = phase_read(FILENAME, STA, {'P':3000, 'S':1290, 'T':4000, 'N':5000 })
 X = np.array(X)
 # One hot labels
 dummy_y = np_utils.to_categorical(Y)
@@ -65,7 +65,9 @@ def baseline_model():
     # create model
     model = Sequential()
     model.add(Dense(12, input_dim=16, activation='relu'))
+    model.add(Dense(10, activation='relu'))
     model.add(Dense(8, activation='relu'))
+    model.add(Dense(6, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     # Compile model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
