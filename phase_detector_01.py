@@ -21,6 +21,9 @@ max_length = 100
 FILENAME="data/phase/ml_feature_bck2.csv"
 STA = "LPAZ"
 
+weight_file_path = "phase_weights_best.hdf5"
+model_file_path = "phase_model.yaml"
+
 def phase_read(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':100 }):
     phase_index = {'P':0, 'S':1, 'T':2, 'N':3}
     features = [[], [], [], []]
@@ -65,6 +68,7 @@ dummy_y = np_utils.to_categorical(Y)
 
 # define baseline model
 def baseline_model():
+    global model_file_path
     # create model
     model = Sequential()
     model.add(Dense(12, input_dim=16, activation='relu'))
@@ -80,14 +84,12 @@ def baseline_model():
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     # serialize model to YAML
     model_yaml = model.to_yaml()
-    with open("phase_model.yaml", "w") as yaml_file:
+    with open(model_file_path, "w") as yaml_file:
         yaml_file.write(model_yaml)
     return model
 
 
-weight_file_path = "phase_weights_best.hdf5"
 checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
-
 estimator = KerasClassifier(build_fn=baseline_model, epochs=200, batch_size=100, verbose=1)
 kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
 
