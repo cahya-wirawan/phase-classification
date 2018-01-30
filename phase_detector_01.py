@@ -15,7 +15,7 @@ import csv
 seed = 7
 np.random.seed(seed)
 max_length = 100
-FILENAME="/Users/Cahya/Work/Machine Learning/data/phase/ml_feature_bck2.csv"
+FILENAME="data/phase/ml_feature_bck2.csv"
 STA = "LPAZ"
 
 def phase_read(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':100 }):
