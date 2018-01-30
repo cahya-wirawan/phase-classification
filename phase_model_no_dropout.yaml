@@ -21,8 +21,6 @@ config:
     trainable: true
     units: 12
     use_bias: true
-- class_name: Dropout
-  config: {name: dropout_37, noise_shape: null, rate: 0.2, seed: null, trainable: true}
 - class_name: Dense
   config:
     activation: relu
@@ -41,8 +39,6 @@ config:
     trainable: true
     units: 10
     use_bias: true
-- class_name: Dropout
-  config: {name: dropout_38, noise_shape: null, rate: 0.2, seed: null, trainable: true}
 - class_name: Dense
   config:
     activation: relu
@@ -61,8 +57,6 @@ config:
     trainable: true
     units: 8
     use_bias: true
-- class_name: Dropout
-  config: {name: dropout_39, noise_shape: null, rate: 0.2, seed: null, trainable: true}
 - class_name: Dense
   config:
     activation: relu
@@ -81,8 +75,6 @@ config:
     trainable: true
     units: 6
     use_bias: true
-- class_name: Dropout
-  config: {name: dropout_40, noise_shape: null, rate: 0.2, seed: null, trainable: true}
 - class_name: Dense
   config:
     activation: softmax
