@@ -4,11 +4,13 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
+from keras.callbacks import ModelCheckpoint
 from keras.utils import np_utils
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
 import random
 import csv
 
@@ -79,8 +81,13 @@ def baseline_model():
     return model
 
 
-estimator = KerasClassifier(build_fn=baseline_model, epochs=200, batch_size=100, verbose=1)
+file_path = "weights-improvement-{epoch:02d}-{acc:.2f}.hdf5"
+checkpoint = ModelCheckpoint(file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
 
+estimator = KerasClassifier(build_fn=baseline_model, epochs=200, batch_size=100, verbose=1, callbacks=[checkpoint])
 kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+
+#grid = GridSearchCV(estimator=estimator, param_grid=param_grid, cv=kfold, fit_params=dict(callbacks=callbacks_list))
+
 results = cross_val_score(estimator, X, dummy_y, cv=kfold)
 print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
