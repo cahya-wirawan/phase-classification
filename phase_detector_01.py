@@ -12,7 +12,7 @@ from phase_reader import phase_read
 seed = 7
 np.random.seed(seed)
 FILENAME="data/phase/ml_feature_bck2.csv"
-STA = "LPAZ"
+STA = "URZ"
 
 weight_file_path = "phase_weights_best.hdf5"
 model_file_path = "phase_model.yaml"
@@ -22,14 +22,26 @@ def baseline_model():
     global model_file_path
     # create model
     model = Sequential()
-    model.add(Dense(12, input_dim=16, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(10, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(6, activation='relu'))
-    model.add(Dropout(0.2))
+    model.add(Dense(128, input_dim=16, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(48, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(48, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(48, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dropout(0.1))
     model.add(Dense(4, activation='softmax'))
     # Compile model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -44,7 +56,7 @@ def baseline_model():
 X, Y = phase_read(FILENAME, STA, {'P':3000, 'S':1290, 'T':4000, 'N':5000 })
 
 checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
-estimator = KerasClassifier(build_fn=baseline_model, epochs=200, batch_size=100, verbose=1)
+estimator = KerasClassifier(build_fn=baseline_model, epochs=2000, batch_size=500, verbose=1)
 kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
 
 results = cross_val_score(estimator, X, Y, cv=kfold, fit_params={'callbacks':[checkpoint]})
