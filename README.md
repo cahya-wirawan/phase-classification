@@ -13,7 +13,7 @@ from the last 17 years (?).
 
 ## Test Comparison
 
-Following is the comparison among difference weights against test dataset:
+Following is the accuracy comparison among difference weights against difference test dataset:
 
 |  Weight\Station |  LPAZ     | URZ      |  ALL     |
 | --------------- | --------- | -------- | -------- |
