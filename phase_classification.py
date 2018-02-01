@@ -56,7 +56,7 @@ def baseline_model():
 X, Y = phase_read(FILENAME, STA, {'P':3000, 'S':1290, 'T':4000, 'N':5000 })
 
 checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
-estimator = KerasClassifier(build_fn=baseline_model, epochs=2000, batch_size=500, verbose=1)
+estimator = KerasClassifier(build_fn=baseline_model, epochs=2000, batch_size=500, verbose=0)
 kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
 
 results = cross_val_score(estimator, X, Y, cv=kfold, fit_params={'callbacks':[checkpoint]})
