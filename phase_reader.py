@@ -12,8 +12,10 @@ def phase_read(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':
         i = 0
         for row in reader:
             if i == 0:
+                i += 1
                 continue
             if sta != "ALL" and row[1] != sta:
+                i += 1
                 continue
             x = row[8:24]
             try:
