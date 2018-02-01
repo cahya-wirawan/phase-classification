@@ -12,7 +12,7 @@ from phase_reader import phase_read
 seed = 7
 np.random.seed(seed)
 FILENAME="data/phase/ml_feature_bck2.csv"
-STA = "URZ"
+STA = "LPAZ"
 
 weight_file_path = "results/phase_weights_best_{}.hdf5".format(STA.lower())
 model_file_path = "results/phase_model_{}.yaml".format(STA.lower())
