@@ -14,8 +14,8 @@ np.random.seed(seed)
 FILENAME="data/phase/ml_feature_bck2.csv"
 STA = "URZ"
 
-weight_file_path = "phase_weights_best.hdf5"
-model_file_path = "phase_model.yaml"
+weight_file_path = "phase_weights_best_{}.hdf5".format(STA.lower())
+model_file_path = "phase_model_{}.yaml".format(STA.lower())
 
 # define baseline model
 def baseline_model():

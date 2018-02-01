@@ -8,8 +8,8 @@ seed = 7
 np.random.seed(seed)
 FILENAME="data/phase/ml_feature_bck2.csv"
 STA = "LPAZ"
-weight_file_path = "phase_weights_best.hdf5"
-model_file_path = "phase_model.yaml"
+weight_file_path = "phase_weights_best_{}.hdf5".format(STA.lower())
+model_file_path = "phase_model_{}.yaml".format(STA.lower())
 
 # load dataset
 X, Y = phase_read(FILENAME, STA, {'P': 1000, 'S': 1000, 'T': 1000, 'N': 1000 })
