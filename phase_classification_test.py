@@ -12,7 +12,7 @@ weight_file_path = "results/phase_weights_best_{}.hdf5".format(STA.lower())
 model_file_path = "results/phase_model_{}.yaml".format(STA.lower())
 
 # load dataset
-X, Y = phase_read(FILENAME, STA, {'P': 1000, 'S': 1000, 'T': 1000, 'N': 1000 })
+X, Y = phase_read(FILENAME, STA, {'P': 2000, 'S': 2000, 'T': 2000, 'N': 2000 })
 
 # load YAML and create model
 yaml_file = open(model_file_path, 'r')
