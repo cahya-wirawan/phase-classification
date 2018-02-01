@@ -11,7 +11,7 @@ from phase_reader import phase_read
 # fix random seed for reproducibility
 seed = 7
 np.random.seed(seed)
-FILENAME="data/phase/ml_feature_bck2.csv"
+FILENAME="data/phase/ml_feature_bck2_train.csv"
 STA = "LPAZ"
 
 weight_file_path = "results/phase_weights_best_{}.hdf5".format(STA.lower())
