@@ -25,8 +25,13 @@ def phase_read(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':
             features[phase_index[row[4]]].append(x)
             i += 1
 
-    for phase in phase_index:
+    phase_list = list(phase_index.keys())
+    phase_list.sort()
+    all_entries = 0
+    for phase in phase_list:
+        all_entries += len(features[phase_index[phase]])
         print("{}: {} entries".format(phase, len(features[phase_index[phase]])))
+    print("Summary: {} entries".format(all_entries))
 
     features_compact_x = []
     features_compact_y = []
