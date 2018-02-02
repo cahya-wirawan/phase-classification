@@ -15,8 +15,8 @@ from the last 17 years (?).
 
 Following is the accuracy comparison among difference weights against difference test dataset:
 
-|  Weight\Station |  LPAZ     | URZ      |  ALL     |
+|  Weight\Station |  S-LPAZ   |  S-URZ   |  S-ALL   |
 | --------------- | ---------:|---------:| --------:|
-| LPAZ            |   73.12%  |  58.13%  |  65.62%  |
-| URZ             |   56.96%  |  71.88%  |  64.42%  |
-| ALL             |           |          |          |
+| W-LPAZ          |   73.12%  |  58.13%  |  65.62%  |
+| W-URZ           |   56.96%  |  71.88%  |  64.42%  |
+| W-ALL           |   70.00%  |  71.07%  |  70.54%  |
