@@ -17,9 +17,9 @@ def baseline_model(layers):
 
     # create model
     model = Sequential()
-    model.add(Dense(128, input_dim=16, activation='relu'))
+    model.add(Dense(layers[0], input_dim=16, activation='relu'))
     model.add(Dropout(0.1))
-    for units in layers:
+    for units in layers[1:]:
         model.add(Dense(units, activation='relu'))
         model.add(Dropout(0.1))
     model.add(Dense(4, activation='softmax'))
@@ -43,7 +43,7 @@ if __name__ == "__main__":
                         help="set the path to the test dataset")
     parser.add_argument("-e", "--epochs", type=int, default=2000,
                         help="set the epochs number)")
-    parser.add_argument("-l", "--layers", default="128 64 48 48 32 32 48 32 16",
+    parser.add_argument("-l", "--layers", default="128 128 64 48 48 32 32 48 32 16",
                         help="set the hidden layers)")
     parser.add_argument("-s", "--station", default="ALL",
                         help="set the station name, it supports currently only LPAZ, URZ and ALL")
