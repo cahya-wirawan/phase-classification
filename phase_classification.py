@@ -12,14 +12,14 @@ from phase_reader import phase_read
 
 
 # define baseline model
-def baseline_model():
+def baseline_model(layers):
     global model_file_path
 
     # create model
     model = Sequential()
     model.add(Dense(128, input_dim=16, activation='relu'))
     model.add(Dropout(0.1))
-    for units in [128, 64, 48, 48, 32, 32, 48, 32, 16]:
+    for units in layers:
         model.add(Dense(units, activation='relu'))
         model.add(Dropout(0.1))
     model.add(Dense(4, activation='softmax'))
@@ -43,6 +43,8 @@ if __name__ == "__main__":
                         help="set the path to the test dataset")
     parser.add_argument("-e", "--epochs", type=int, default=2000,
                         help="set the epochs number)")
+    parser.add_argument("-l", "--layers", default="128 64 48 48 32 32 48 32 16",
+                        help="set the hidden layers)")
     parser.add_argument("-s", "--station", default="ALL",
                         help="set the station name, it supports currently only LPAZ, URZ and ALL")
     parser.add_argument("-v", "--verbose", type=int, default=0,
@@ -67,6 +69,11 @@ if __name__ == "__main__":
     station = args.station
     weight_file_path = "results/phase_weights_best_{}.hdf5".format(station.lower())
     model_file_path = "results/phase_model_{}.yaml".format(station.lower())
+    try:
+        layers = [int(units) for units in args.layers.split(" ")]
+    except ValueError:
+        print("The layers should be a list of integer, delimited by a whitespace")
+        exit(1)
 
     if args.action == "train":
         # load dataset
@@ -74,7 +81,7 @@ if __name__ == "__main__":
 
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=args.verbose, save_best_only=True, mode='max')
-        estimator = KerasClassifier(build_fn=baseline_model, epochs=epochs, batch_size=500, verbose=args.verbose)
+        estimator = KerasClassifier(build_fn=baseline_model, layers=layers, epochs=epochs, batch_size=500, verbose=args.verbose)
         kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
 
         results = cross_val_score(estimator, X, Y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
