@@ -34,7 +34,7 @@ def baseline_model():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-a", "--action", choices=["train", "test"], default="train",
                         help="set the action, either training or test the dataset")
     parser.add_argument("--train_dataset", default="data/phase/ml_feature_bck2_train.csv",
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--epochs", type=int, default=2000,
                         help="set the epochs number)")
     parser.add_argument("-s", "--station", default="ALL",
-                        help="set the station name, it supports currently only LPAZ, URZ and ALL (default)")
+                        help="set the station name, it supports currently only LPAZ, URZ and ALL")
     parser.add_argument("-v", "--verbose", type=int, default=0,
                         help="set the verbosity)")
     parser.add_argument("-P", type=int, default=6000,
