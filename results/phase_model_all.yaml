@@ -17,12 +17,12 @@ config:
       class_name: VarianceScaling
       config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
     kernel_regularizer: null
-    name: dense_100
+    name: dense_1
     trainable: true
-    units: 128
+    units: 10
     use_bias: true
 - class_name: Dropout
-  config: {name: dropout_91, noise_shape: null, rate: 0.1, seed: null, trainable: true}
+  config: {name: dropout_1, noise_shape: null, rate: 0.1, seed: null, trainable: true}
 - class_name: Dense
   config:
     activation: relu
@@ -37,12 +37,12 @@ config:
       class_name: VarianceScaling
       config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
     kernel_regularizer: null
-    name: dense_101
+    name: dense_2
     trainable: true
-    units: 128
+    units: 8
     use_bias: true
 - class_name: Dropout
-  config: {name: dropout_92, noise_shape: null, rate: 0.1, seed: null, trainable: true}
+  config: {name: dropout_2, noise_shape: null, rate: 0.1, seed: null, trainable: true}
 - class_name: Dense
   config:
     activation: relu
@@ -57,152 +57,12 @@ config:
       class_name: VarianceScaling
       config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
     kernel_regularizer: null
-    name: dense_102
+    name: dense_3
     trainable: true
-    units: 64
+    units: 4
     use_bias: true
 - class_name: Dropout
-  config: {name: dropout_93, noise_shape: null, rate: 0.1, seed: null, trainable: true}
-- class_name: Dense
-  config:
-    activation: relu
-    activity_regularizer: null
-    bias_constraint: null
-    bias_initializer:
-      class_name: Zeros
-      config: {}
-    bias_regularizer: null
-    kernel_constraint: null
-    kernel_initializer:
-      class_name: VarianceScaling
-      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
-    kernel_regularizer: null
-    name: dense_103
-    trainable: true
-    units: 48
-    use_bias: true
-- class_name: Dropout
-  config: {name: dropout_94, noise_shape: null, rate: 0.1, seed: null, trainable: true}
-- class_name: Dense
-  config:
-    activation: relu
-    activity_regularizer: null
-    bias_constraint: null
-    bias_initializer:
-      class_name: Zeros
-      config: {}
-    bias_regularizer: null
-    kernel_constraint: null
-    kernel_initializer:
-      class_name: VarianceScaling
-      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
-    kernel_regularizer: null
-    name: dense_104
-    trainable: true
-    units: 48
-    use_bias: true
-- class_name: Dropout
-  config: {name: dropout_95, noise_shape: null, rate: 0.1, seed: null, trainable: true}
-- class_name: Dense
-  config:
-    activation: relu
-    activity_regularizer: null
-    bias_constraint: null
-    bias_initializer:
-      class_name: Zeros
-      config: {}
-    bias_regularizer: null
-    kernel_constraint: null
-    kernel_initializer:
-      class_name: VarianceScaling
-      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
-    kernel_regularizer: null
-    name: dense_105
-    trainable: true
-    units: 32
-    use_bias: true
-- class_name: Dropout
-  config: {name: dropout_96, noise_shape: null, rate: 0.1, seed: null, trainable: true}
-- class_name: Dense
-  config:
-    activation: relu
-    activity_regularizer: null
-    bias_constraint: null
-    bias_initializer:
-      class_name: Zeros
-      config: {}
-    bias_regularizer: null
-    kernel_constraint: null
-    kernel_initializer:
-      class_name: VarianceScaling
-      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
-    kernel_regularizer: null
-    name: dense_106
-    trainable: true
-    units: 32
-    use_bias: true
-- class_name: Dropout
-  config: {name: dropout_97, noise_shape: null, rate: 0.1, seed: null, trainable: true}
-- class_name: Dense
-  config:
-    activation: relu
-    activity_regularizer: null
-    bias_constraint: null
-    bias_initializer:
-      class_name: Zeros
-      config: {}
-    bias_regularizer: null
-    kernel_constraint: null
-    kernel_initializer:
-      class_name: VarianceScaling
-      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
-    kernel_regularizer: null
-    name: dense_107
-    trainable: true
-    units: 48
-    use_bias: true
-- class_name: Dropout
-  config: {name: dropout_98, noise_shape: null, rate: 0.1, seed: null, trainable: true}
-- class_name: Dense
-  config:
-    activation: relu
-    activity_regularizer: null
-    bias_constraint: null
-    bias_initializer:
-      class_name: Zeros
-      config: {}
-    bias_regularizer: null
-    kernel_constraint: null
-    kernel_initializer:
-      class_name: VarianceScaling
-      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
-    kernel_regularizer: null
-    name: dense_108
-    trainable: true
-    units: 32
-    use_bias: true
-- class_name: Dropout
-  config: {name: dropout_99, noise_shape: null, rate: 0.1, seed: null, trainable: true}
-- class_name: Dense
-  config:
-    activation: relu
-    activity_regularizer: null
-    bias_constraint: null
-    bias_initializer:
-      class_name: Zeros
-      config: {}
-    bias_regularizer: null
-    kernel_constraint: null
-    kernel_initializer:
-      class_name: VarianceScaling
-      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
-    kernel_regularizer: null
-    name: dense_109
-    trainable: true
-    units: 16
-    use_bias: true
-- class_name: Dropout
-  config: {name: dropout_100, noise_shape: null, rate: 0.1, seed: null, trainable: true}
+  config: {name: dropout_3, noise_shape: null, rate: 0.1, seed: null, trainable: true}
 - class_name: Dense
   config:
     activation: softmax
@@ -217,7 +77,7 @@ config:
       class_name: VarianceScaling
       config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
     kernel_regularizer: null
-    name: dense_110
+    name: dense_4
     trainable: true
     units: 4
     use_bias: true
