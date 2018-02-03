@@ -1,49 +1,29 @@
+import argparse
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.callbacks import ModelCheckpoint, TensorBoard
+from keras.models import model_from_yaml
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from phase_reader import phase_read
 
-# fix random seed for reproducibility
-seed = 7
-np.random.seed(seed)
-FILENAME="data/phase/ml_feature_bck2_train.csv"
-# possible value for STA: LPAZ, URZ and ALL
-STA = "ALL"
-
-weight_file_path = "results/phase_weights_best_{}.hdf5".format(STA.lower())
-model_file_path = "results/phase_model_{}.yaml".format(STA.lower())
 
 # define baseline model
 def baseline_model():
     global model_file_path
+
     # create model
     model = Sequential()
     model.add(Dense(128, input_dim=16, activation='relu'))
     model.add(Dropout(0.1))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(48, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(48, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(48, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dropout(0.1))
+    for units in [128, 64, 48, 48, 32, 32, 48, 32, 16]:
+        model.add(Dense(units, activation='relu'))
+        model.add(Dropout(0.1))
     model.add(Dense(4, activation='softmax'))
+
     # Compile model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     # serialize model to YAML
@@ -53,13 +33,66 @@ def baseline_model():
     return model
 
 
-# load dataset
-X, Y = phase_read(FILENAME, STA, {'P':6000, 'S':3000, 'T':8000, 'N':10000 })
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--action", choices=["train", "test"], default="train",
+                        help="set the action, either training or test the dataset")
+    parser.add_argument("--train_dataset", default="data/phase/ml_feature_bck2_train.csv",
+                        help="set the path to the training dataset")
+    parser.add_argument("--test_dataset", default="data/phase/ml_feature_bck2_test.csv",
+                        help="set the path to the test dataset")
+    parser.add_argument("-e", "--epochs", type=int, default=2000,
+                        help="set the epochs number)")
+    parser.add_argument("-s", "--station", default="ALL",
+                        help="set the station name, it supports currently only LPAZ, URZ and ALL (default)")
+    parser.add_argument("-v", "--verbose", type=int, default=0,
+                        help="set the verbosity)")
+    parser.add_argument("-P", type=int, default=6000,
+                        help="set the number of entries of P to be read from the dataset)")
+    parser.add_argument("-S", type=int, default=3000,
+                        help="set the number of entries of S to be read from the dataset)")
+    parser.add_argument("-T", type=int, default=8000,
+                        help="set the number of entries of T to be read from the dataset)")
+    parser.add_argument("-N", type=int, default=10000,
+                        help="set the number of entries of N to be read from the dataset)")
+    args = parser.parse_args()
 
-tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
-checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
-estimator = KerasClassifier(build_fn=baseline_model, epochs=2000, batch_size=500, verbose=0)
-kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+    # fix random seed for reproducibility
+    seed = 7
+    np.random.seed(seed)
 
-results = cross_val_score(estimator, X, Y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
-print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
+    epochs = args.epochs
+    train_dataset = args.train_dataset
+    test_dataset = args.test_dataset
+    station = args.station
+    weight_file_path = "results/phase_weights_best_{}.hdf5".format(station.lower())
+    model_file_path = "results/phase_model_{}.yaml".format(station.lower())
+
+    if args.action == "train":
+        # load dataset
+        X, Y = phase_read(train_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
+
+        tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
+        checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=args.verbose, save_best_only=True, mode='max')
+        estimator = KerasClassifier(build_fn=baseline_model, epochs=epochs, batch_size=500, verbose=args.verbose)
+        kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+
+        results = cross_val_score(estimator, X, Y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
+        print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
+    else:
+        # load dataset
+        X, Y = phase_read(test_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
+
+        # load YAML and create model
+        yaml_file = open(model_file_path, 'r')
+        loaded_model_yaml = yaml_file.read()
+        yaml_file.close()
+        loaded_model = model_from_yaml(loaded_model_yaml)
+        # load weights into new model
+        loaded_model.load_weights(weight_file_path)
+        print("Loaded model from disk")
+
+        # evaluate loaded model on test data
+        loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        score = loaded_model.evaluate(X, Y, verbose=0)
+        print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
