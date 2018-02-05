@@ -8,7 +8,9 @@ from keras.callbacks import ModelCheckpoint, TensorBoard
 from keras.models import model_from_yaml
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
+from sklearn.metrics import confusion_matrix
 from phase_reader import phase_read
+from phase_utils import print_cm
 
 
 # define baseline model
@@ -106,4 +108,8 @@ if __name__ == "__main__":
         # evaluate loaded model on test data
         loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         score = loaded_model.evaluate(X, Y, verbose=0)
+        prediction = loaded_model.predict(X, verbose=0)
+        cm = confusion_matrix(Y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
+        print("Confusion matrix:")
+        print_cm(cm, labels=['P','S','T','N'])
