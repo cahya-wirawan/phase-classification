@@ -6,8 +6,9 @@ This project is an attempt to apply deep learning on seismic phase classificatio
 The project uses an internal dataset (not included in this repo) collected from two seismic stations LPAZ 
 and URZ from the last several years (?). It contains 776155 entries and 16 features. The dataset  
 ml_feature_bck2.csv is a dump of database table ml_feature_bck2, which is created/collected by Radek Hofman.
-Furthermore, it is splited into two files (ml_feature_bck2_train.csv and ml_feature_bck2_test.csv) 
-for training (and validation) dataset and test dataset. The test dataset contains following entries
+Furthermore, it is splited using the python script phase_splitter.py into two files (ml_feature_bck2_train.csv 
+and ml_feature_bck2_test.csv) for training (and validation) dataset and test dataset. The test dataset 
+contains following entries
 
 |  Station and Phase | #Entries    |
 | ------------------ |  ----------:|
@@ -21,7 +22,9 @@ for training (and validation) dataset and test dataset. The test dataset contain
 |  URZ Noise         |   500       |
 
 
-## Datasets Visualization 
+## Datasets Visualization
+t-Distributed Stochastic Neighbor Embedding (t-SNE) is used to reduce the dimensionality of the dataset
+and visualize it in 2D graph. 
 
 ## The Application
 
