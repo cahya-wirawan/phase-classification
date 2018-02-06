@@ -9,16 +9,16 @@ ml_feature_bck2.csv is a dump of database table ml_feature_bck2, which is create
 Furthermore, it is splited into two files (ml_feature_bck2_train.csv and ml_feature_bck2_test.csv) 
 for training (and validation) dataset and test dataset. The test dataset contains following entries
 
-|  Station and Phase|  #Entries   |
-| ------------------|: --------- :|
-|  LPAZ P-Phase     |   300       |
-|  LPAZ S-Phase     |   120       |
-|  LPAZ T-Phase     |   200       |
-|  LPAZ Noise       |   500       |
-|  URZ P-Phase      |   300       |
-|  URZ S-Phase      |   120       |
-|  URZ T-Phase      |   200       |
-|  URZ Noise        |   500       |
+|  Station and Phase |  #Entries   |
+| ------------------ |: --------- :|
+|  LPAZ P-Phase      |   300       |
+|  LPAZ S-Phase      |   120       |
+|  LPAZ T-Phase      |   200       |
+|  LPAZ Noise        |   500       |
+|  URZ P-Phase       |   300       |
+|  URZ S-Phase       |   120       |
+|  URZ T-Phase       |   200       |
+|  URZ Noise         |   500       |
 
 
 ## Datasets Visualization 
