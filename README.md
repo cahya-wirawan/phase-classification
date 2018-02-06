@@ -25,6 +25,7 @@ contains following entries
 ## Datasets Visualization
 t-Distributed Stochastic Neighbor Embedding (t-SNE) is used to reduce the dimensionality of the dataset
 and visualize it in 2D graph. 
+![16D Phases in 2D](https://github.com/cahya-wirawan/phase-classification/blob/master/images/4Phases-tSNE.jpg)
 
 ## The Application
 
