@@ -1,15 +1,31 @@
 # Seismic Phase Classification
 
-The main purpose of this repository is to analyse the deep learning's usage in seismic phase classification. The 
-internal dataset (not included in this repo) contains 16 features collected from two seismic stations LPAZ and URZ 
-from the last 17 years (?). 
+This project is an attempt to apply deep learning on seismic phase classification. 
 
-## Datasets
+## The Datasets
+The project uses an internal dataset (not included in this repo) collected from two seismic stations LPAZ 
+and URZ from the last several years (?). It contains 776155 entries and 16 features. The dataset  
+ml_feature_bck2.csv is a dump of database table ml_feature_bck2, which is created/collected by Radek Hofman.
+Furthermore, it is splited into two files (ml_feature_bck2_train.csv and ml_feature_bck2_test.csv) 
+for training (and validation) dataset and test dataset. The test dataset contains following entries
 
-## Scripts
+|  Station and Phase|  #Entries   |
+| ------------------|: --------- :|
+|  LPAZ P-Phase |   300  |
+|  LPAZ S-Phase |   120  |
+|  LPAZ T-Phase |   200  |
+|  LPAZ Noise   |   500  |
+|  URZ P-Phase  |   300  |
+|  URZ S-Phase  |   120  |
+|  URZ T-Phase  |   200  |
+|  URZ Noise    |   500  |
+
+
+## Datasets Visualization 
+
+## The Application
 
 ### phase_classification.py
-### phase_classification_test.py
 
 ## Test Comparison
 
