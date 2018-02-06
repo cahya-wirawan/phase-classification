@@ -33,7 +33,7 @@ and visualize it in 2D graph [Jupyter notebook's phase_tSNE](https://github.com/
 This is the main application for the training and testing. The deep learning model is implemented using Keras 
 with Tensorflow as backend. Keras is used intead of Tensorflow directly to simplify the prototyping. The training will 
 generate a weight and model files: phase_weights_best_&lt;station name&gt;.hdf5 and 
-phase_model_best_&lt;station name&gt;.hdf5 in "results" directory. 
+phase_model_best_&lt;station name&gt;.hdf5 in "results" directory which will be used later for testing purpose.
 
 ### Usage
 
@@ -105,6 +105,31 @@ Baseline: 70.54% (1.90%)
 * Training using only 3 hidden layers "4 4 4", dopout of 0.3 and 10 epochs:
 ```
 $ python phase_classification.py -l "4 4 4" -d 0.3 -e 10
+```
+* Testing :
+```
+$ python phase_classification.py -a test
+Using TensorFlow backend.
+N: 1000 entries
+P: 600 entries
+S: 240 entries
+T: 400 entries
+Summary: 2240 entries
+2018-02-06 12:16:26.875535: I tensorflow/core/platform/cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX AVX2 FMA
+2018-02-06 12:16:26.998599: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:895] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2018-02-06 12:16:26.998962: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1105] Found device 0 with properties: 
+name: GeForce GTX 1080 major: 6 minor: 1 memoryClockRate(GHz): 1.8855
+pciBusID: 0000:28:00.0
+totalMemory: 7.92GiB freeMemory: 7.34GiB
+2018-02-06 12:16:26.998977: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1195] Creating TensorFlow device (/device:GPU:0) -> (device: 0, name: GeForce GTX 1080, pci bus id: 0000:28:00.0, compute capability: 6.1)
+Loaded model from disk
+acc: 70.54%
+Confusion matrix:
+              P     S     T     N 
+        P 413.0   1.0 126.0  60.0 
+        S   9.0 121.0  33.0  77.0 
+        T  73.0  39.0 228.0  60.0 
+        N  47.0  67.0  68.0 818.0 
 ```
 ## Test Comparison
 
