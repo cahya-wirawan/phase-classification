@@ -31,7 +31,9 @@ and visualize it in 2D graph [Jupyter notebook's phase_tSNE](https://github.com/
 
 ### phase_classification.py
 This is the main application for the training and testing. The deep learning model is implemented using Keras 
-with Tensorflow as backend. Keras is used intead of Tensorflow directly to simplify the prototyping.
+with Tensorflow as backend. Keras is used intead of Tensorflow directly to simplify the prototyping. The training will 
+generate a weight and model files: phase_weights_best_<station name>.hdf5 and phase_model_best_<station name>.hdf5 in 
+"results" directory. 
 
 ### Usage
 
