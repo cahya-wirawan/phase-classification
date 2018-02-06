@@ -11,14 +11,14 @@ for training (and validation) dataset and test dataset. The test dataset contain
 
 |  Station and Phase|  #Entries   |
 | ------------------|: --------- :|
-|  LPAZ P-Phase |   300  |
-|  LPAZ S-Phase |   120  |
-|  LPAZ T-Phase |   200  |
-|  LPAZ Noise   |   500  |
-|  URZ P-Phase  |   300  |
-|  URZ S-Phase  |   120  |
-|  URZ T-Phase  |   200  |
-|  URZ Noise    |   500  |
+|  LPAZ P-Phase     |   300       |
+|  LPAZ S-Phase     |   120       |
+|  LPAZ T-Phase     |   200       |
+|  LPAZ Noise       |   500       |
+|  URZ P-Phase      |   300       |
+|  URZ S-Phase      |   120       |
+|  URZ T-Phase      |   200       |
+|  URZ Noise        |   500       |
 
 
 ## Datasets Visualization 
