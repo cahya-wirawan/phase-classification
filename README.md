@@ -34,10 +34,10 @@ This is the main application for the training and testing. The deep learning mod
 with Tensorflow as backend. Keras is used intead of Tensorflow directly to simplify the prototyping.
 
 ### Usage
+
+* List of all possible commands:
 ```
-$ python phase_classification.py -h                                                               
-/home/cahya/.virtualenvs/phase/lib/python3.5/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.                                                    
-  from ._conv import register_converters as _register_converters                                                                                           
+$ python phase_classification.py -h                                                                                      
 Using TensorFlow backend.                                                                                                                                  
 usage: phase_classification.py [-h] [-a {train,test}]                                                                                                      
                                [--train_dataset TRAIN_DATASET]                                                                                             
@@ -78,6 +78,32 @@ optional arguments:
                         dataset) (default: 10000)                
 ```
 
+* Training (the default model uses 11 hidden layers "128 128 64 48 48 32 32 48 32 16" and 2000 epochs):
+```
+$ python phase_classification.py
+Using TensorFlow backend.
+N: 10000 entries
+P: 6000 entries
+S: 3000 entries
+T: 8000 entries
+Summary: 27000 entries
+/home/cahya/.virtualenvs/phase/lib/python3.5/site-packages/sklearn/base.py:115: DeprecationWarning: Estimator KerasClassifier modifies parameters in __init__. This behavior is deprecated as of 0.18 and support for this behavior will be removed in 0.20.
+  % type(estimator).__name__, DeprecationWarning)
+2018-02-01 12:01:20.894296: I tensorflow/core/platform/cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX AVX2 FMA
+2018-02-01 12:01:21.017779: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:895] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2018-02-01 12:01:21.019589: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1105] Found device 0 with properties: 
+name: GeForce GTX 1080 major: 6 minor: 1 memoryClockRate(GHz): 1.8855
+pciBusID: 0000:28:00.0
+totalMemory: 7.92GiB freeMemory: 7.34GiB
+2018-02-01 12:01:21.019611: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1195] Creating TensorFlow device (/device:GPU:0) -> (device: 0, name: GeForce GTX 1080, pci bus id: 0000:28:00.0, compute capability: 6.1)
+...
+Baseline: 70.54% (1.90%)
+
+```
+* Training using only 3 hidden layers "4 4 4", dopout of 0.3 and 10 epochs:
+```
+$ python phase_classification.py -l "4 4 4" -d 0.3 -e 10
+```
 ## Test Comparison
 
 Following is the accuracy comparison among difference weights against difference test dataset:
