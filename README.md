@@ -105,6 +105,8 @@ Baseline: 70.54% (1.90%)
 * Training using only 3 hidden layers "4 4 4", dopout of 0.3 and 10 epochs:
 ```
 $ python phase_classification.py -l "4 4 4" -d 0.3 -e 10
+...
+Baseline: 37.60% (4.20%)
 ```
 * Testing :
 ```
