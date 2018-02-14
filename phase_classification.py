@@ -112,4 +112,8 @@ if __name__ == "__main__":
         cm = confusion_matrix(Y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
-        print_cm(cm, labels=['P','S','T','N'])
+        phases = []
+        for phase in ['P', 'S', 'T', 'N']:
+            if vars(args)[phase] != 0:
+                phases.append(phase)
+        print_cm(cm, labels=phases)

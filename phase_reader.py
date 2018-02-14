@@ -50,6 +50,6 @@ def phase_read(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':
 
     features_compact_x = np.array(features_compact_x)
     # One hot labels
-    features_compact_y = np_utils.to_categorical(features_compact_y)
+    features_compact_y = np_utils.to_categorical(features_compact_y, len(phase_index))
 
     return features_compact_x, features_compact_y
