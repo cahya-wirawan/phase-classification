@@ -73,8 +73,9 @@ if __name__ == "__main__":
     dataset = args.dataset
     train_dataset = args.train_dataset
     test_dataset = args.test_dataset
-    stations = [s.lower() for s in args.stations.split(" ")]
-    stations.sort()
+    stations = args.stations.split(" ")
+    stations_lower = [station.lower() for station in stations]
+    stations_lower.sort()
     layers = []
     try:
         layers = [int(units) for units in args.layers.split(" ")]
@@ -84,9 +85,9 @@ if __name__ == "__main__":
 
     dropout = args.dropout
     weight_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
-        format("_".join(stations), "_".join([str(layer) for layer in layers]), dropout)
+        format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
     model_file_path = "results/phase_model_s_{}_l_{}_d_{}.yaml".\
-        format("_".join(stations), "_".join([str(layer) for layer in layers]), dropout)
+        format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
 
     pd = PhaseDataset(filename=dataset)
     train_x, train_y, test_x, test_y = pd.get_dataset(stations=stations,
