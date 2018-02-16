@@ -11,7 +11,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from phase_reader import phase_read
 from phase_utils import print_cm
-
+from phase_dataset import PhaseDataset
 
 # define baseline model
 def baseline_model(layers, dropout=0.1):
@@ -39,6 +39,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-a", "--action", choices=["train", "test"], default="train",
                         help="set the action, either training or test the dataset")
+    parser.add_argument("--dataset", default="data/phase/ml_features.csv",
+                        help="set the path to the dataset")
     parser.add_argument("--train_dataset", default="data/phase/ml_feature_bck2_train.csv",
                         help="set the path to the training dataset")
     parser.add_argument("--test_dataset", default="data/phase/ml_feature_bck2_test.csv",
@@ -68,6 +70,7 @@ if __name__ == "__main__":
     np.random.seed(seed)
 
     epochs = args.epochs
+    dataset = args.dataset
     train_dataset = args.train_dataset
     test_dataset = args.test_dataset
     station = args.station
@@ -80,9 +83,13 @@ if __name__ == "__main__":
         exit(1)
     dropout = args.dropout
 
+    pd = PhaseDataset(filename=dataset)
+    train_x, train_y, test_x, test_y = pd.get_dataset(stations=["URZ"],
+                                                 phase_list={'P': ['regP'], 'S': ['regS'],'T': ['tele'], 'N': ['N']})
+
     if args.action == "train":
         # load dataset
-        X, Y = phase_read(train_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
+        # X, Y = phase_read(train_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
 
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=args.verbose, save_best_only=True, mode='max')
@@ -90,11 +97,11 @@ if __name__ == "__main__":
                                     epochs=epochs, batch_size=500, verbose=args.verbose)
         kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
 
-        results = cross_val_score(estimator, X, Y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
+        results = cross_val_score(estimator, train_x, train_y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
         print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
     else:
         # load dataset
-        X, Y = phase_read(test_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
+        # X, Y = phase_read(test_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
 
         # load YAML and create model
         yaml_file = open(model_file_path, 'r')
@@ -107,8 +114,8 @@ if __name__ == "__main__":
 
         # evaluate loaded model on test data
         loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        score = loaded_model.evaluate(X, Y, verbose=0)
-        prediction = loaded_model.predict(X, verbose=0)
+        score = loaded_model.evaluate(test_x, test_y, verbose=0)
+        prediction = loaded_model.predict(test_x, verbose=0)
         cm = confusion_matrix(Y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")

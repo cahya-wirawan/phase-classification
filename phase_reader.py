@@ -1,6 +1,7 @@
 import random
 import csv
 import numpy as np
+import pandas as pd
 from keras.utils import np_utils
 
 
@@ -53,3 +54,11 @@ def phase_read(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':
     features_compact_y = np_utils.to_categorical(features_compact_y, len(phase_index))
 
     return features_compact_x, features_compact_y
+
+
+def phase_load(filename, sta, max_length_phase: {'P':100, 'S':100, 'T':100, 'N':100 }):
+    phase_index = {'P':0, 'S':1, 'T':2, 'N':3}
+    features = [[], [], [], []]
+
+    df = pd.read_csv(filepath_or_buffer=filename)
+    
