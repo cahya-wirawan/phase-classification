@@ -36,10 +36,8 @@ if __name__ == "__main__":
                         help="set the action, either training or test the dataset")
     parser.add_argument("--dataset", default="data/phase/ml_features.csv",
                         help="set the path to the dataset")
-    parser.add_argument("--train_dataset", default="data/phase/ml_feature_bck2_train.csv",
-                        help="set the path to the training dataset")
-    parser.add_argument("--test_dataset", default="data/phase/ml_feature_bck2_test.csv",
-                        help="set the path to the test dataset")
+    parser.add_argument("-m", "--model", default=None,
+                        help="set the path to the pre-trained model/weights")
     parser.add_argument("-e", "--epochs", type=int, default=2000,
                         help="set the epochs number)")
     parser.add_argument("-l", "--layers", default="128 128 64 48 48 32 32 48 32 16",
@@ -66,8 +64,6 @@ if __name__ == "__main__":
 
     epochs = args.epochs
     dataset = args.dataset
-    train_dataset = args.train_dataset
-    test_dataset = args.test_dataset
     stations = args.stations.split(" ")
     stations_lower = [station.lower() for station in stations]
     stations_lower.sort()
@@ -79,17 +75,16 @@ if __name__ == "__main__":
         exit(1)
 
     dropout = args.dropout
-    model_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
-        format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
-
+    if args.model is None:
+        model_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
+            format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
+    else:
+        model_file_path = args.model
     pd = PhaseDataset(filename=dataset)
     train_x, train_y, test_x, test_y = pd.get_dataset(stations=stations,
                                                  phase_list={'P': ['regP'], 'S': ['regS'],'T': ['tele'], 'N': ['N']})
 
     if args.action == "train":
-        # load dataset
-        # X, Y = phase_read(train_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
-
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(model_file_path, monitor='acc', verbose=args.verbose, save_best_only=True, mode='max')
         estimator = KerasClassifier(build_fn=baseline_model, layers=layers, dropout=dropout,
@@ -99,9 +94,6 @@ if __name__ == "__main__":
         results = cross_val_score(estimator, train_x, train_y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
         print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
     else:
-        # load dataset
-        # X, Y = phase_read(test_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
-
         # load model & weight
         loaded_model = load_model(model_file_path)
         print("Loaded model from disk")
