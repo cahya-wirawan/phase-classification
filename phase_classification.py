@@ -73,15 +73,20 @@ if __name__ == "__main__":
     dataset = args.dataset
     train_dataset = args.train_dataset
     test_dataset = args.test_dataset
-    stations = args.stations.split(" ")
-    weight_file_path = "results/phase_weights_best_s_{}.hdf5".format("_".join([station.lower() for station in stations]))
-    model_file_path = "results/phase_model_s_{}.yaml".format("_".join([station.lower() for station in stations]))
+    stations = [s.lower() for s in args.stations.split(" ")]
+    stations.sort()
+    layers = []
     try:
         layers = [int(units) for units in args.layers.split(" ")]
     except ValueError:
         print("The layers should be a list of integer, delimited by a whitespace")
         exit(1)
+
     dropout = args.dropout
+    weight_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
+        format("_".join(stations), "_".join(layers), dropout)
+    model_file_path = "results/phase_model_s_{}_l_{}_d_{}.yaml".\
+        format("_".join(stations), "_".join(layers), dropout)
 
     pd = PhaseDataset(filename=dataset)
     train_x, train_y, test_x, test_y = pd.get_dataset(stations=stations,
