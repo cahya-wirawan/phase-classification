@@ -116,7 +116,7 @@ if __name__ == "__main__":
         loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         score = loaded_model.evaluate(test_x, test_y, verbose=0)
         prediction = loaded_model.predict(test_x, verbose=0)
-        cm = confusion_matrix(Y.argmax(axis=1), prediction.argmax(axis=1))
+        cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
         phases = []
