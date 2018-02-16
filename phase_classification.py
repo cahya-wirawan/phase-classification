@@ -51,8 +51,8 @@ if __name__ == "__main__":
                         help="set the hidden layers)")
     parser.add_argument("-d", "--dropout", type=float, default=0.1,
                         help="set the dropout)")
-    parser.add_argument("-s", "--station", default="ALL",
-                        help="set the station name, it supports currently only LPAZ, URZ and ALL")
+    parser.add_argument("-s", "--stations", default="URZ",
+                        help="set the station name, it supports currently only LPAZ and URZ")
     parser.add_argument("-v", "--verbose", type=int, default=0,
                         help="set the verbosity)")
     parser.add_argument("-P", type=int, default=6000,
@@ -73,9 +73,9 @@ if __name__ == "__main__":
     dataset = args.dataset
     train_dataset = args.train_dataset
     test_dataset = args.test_dataset
-    station = args.station
-    weight_file_path = "results/phase_weights_best_{}.hdf5".format(station.lower())
-    model_file_path = "results/phase_model_{}.yaml".format(station.lower())
+    stations = args.stations.split(" ")
+    weight_file_path = "results/phase_weights_best_s_{}.hdf5".format("_".join([station.lower() for station in stations]))
+    model_file_path = "results/phase_model_s_{}.yaml".format("_".join([station.lower() for station in stations]))
     try:
         layers = [int(units) for units in args.layers.split(" ")]
     except ValueError:
