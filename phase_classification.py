@@ -5,7 +5,7 @@ from keras.layers import Dense
 from keras.layers import Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.callbacks import ModelCheckpoint, TensorBoard
-from keras.models import model_from_yaml
+from keras.models import load_model
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
@@ -13,10 +13,9 @@ from phase_reader import phase_read
 from phase_utils import print_cm
 from phase_dataset import PhaseDataset
 
+
 # define baseline model
 def baseline_model(layers, dropout=0.1):
-    global model_file_path
-
     # create model
     model = Sequential()
     model.add(Dense(layers[0], input_dim=16, activation='relu'))
@@ -28,10 +27,6 @@ def baseline_model(layers, dropout=0.1):
 
     # Compile model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    # serialize model to YAML
-    model_yaml = model.to_yaml()
-    with open(model_file_path, "w") as yaml_file:
-        yaml_file.write(model_yaml)
     return model
 
 
@@ -84,9 +79,7 @@ if __name__ == "__main__":
         exit(1)
 
     dropout = args.dropout
-    weight_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
-        format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
-    model_file_path = "results/phase_model_s_{}_l_{}_d_{}.yaml".\
+    model_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
         format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
 
     pd = PhaseDataset(filename=dataset)
@@ -98,7 +91,7 @@ if __name__ == "__main__":
         # X, Y = phase_read(train_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
 
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
-        checkpoint = ModelCheckpoint(weight_file_path, monitor='acc', verbose=args.verbose, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(model_file_path, monitor='acc', verbose=args.verbose, save_best_only=True, mode='max')
         estimator = KerasClassifier(build_fn=baseline_model, layers=layers, dropout=dropout,
                                     epochs=epochs, batch_size=500, verbose=args.verbose)
         kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
@@ -109,13 +102,8 @@ if __name__ == "__main__":
         # load dataset
         # X, Y = phase_read(test_dataset, station, {'P': args.P, 'S': args.S, 'T': args.T, 'N': args.N})
 
-        # load YAML and create model
-        yaml_file = open(model_file_path, 'r')
-        loaded_model_yaml = yaml_file.read()
-        yaml_file.close()
-        loaded_model = model_from_yaml(loaded_model_yaml)
-        # load weights into new model
-        loaded_model.load_weights(weight_file_path)
+        # load model & weight
+        loaded_model = load_model(model_file_path)
         print("Loaded model from disk")
 
         # evaluate loaded model on test data
