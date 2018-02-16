@@ -84,7 +84,7 @@ if __name__ == "__main__":
     dropout = args.dropout
 
     pd = PhaseDataset(filename=dataset)
-    train_x, train_y, test_x, test_y = pd.get_dataset(stations=["URZ"],
+    train_x, train_y, test_x, test_y = pd.get_dataset(stations=stations,
                                                  phase_list={'P': ['regP'], 'S': ['regS'],'T': ['tele'], 'N': ['N']})
 
     if args.action == "train":
