@@ -95,17 +95,24 @@ if __name__ == "__main__":
         train_x, train_y = pd.get_dataset(phase_length=phase_length)
 
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
-        checkpoint = ModelCheckpoint(model_file_path, monitor='acc', verbose=args.verbose, save_best_only=True, mode='max')
-        estimator = KerasClassifier(build_fn=baseline_model, layers=layers, dropout=dropout,
-                                    epochs=epochs, batch_size=500, verbose=args.verbose)
-        kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+        checkpoint = ModelCheckpoint(model_file_path, monitor='acc', verbose=args.verbose,
+                                     save_best_only=True, mode='max')
         if args.cv:
+            kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+            estimator = KerasClassifier(build_fn=baseline_model, layers=layers, dropout=dropout,
+                                        epochs=epochs, batch_size=500, verbose=args.verbose)
             results = cross_val_score(estimator, train_x, train_y, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
+
+            print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            results = cross_val_score(estimator, train_x, train_y, cv=2,
-                                      fit_params={'callbacks':[checkpoint, tensorboard]})
-        print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
+            model = baseline_model(layers=layers, dropout=dropout)
+            history = model.fit(x=train_x, y=train_y, batch_size=500, epochs=epochs, verbose=args.verbose,
+                      validation_split=0.1, callbacks=[checkpoint, tensorboard])
+            print("Max of acc: {}, val_acc: {}".
+                  format(max(history.history["acc"]), max(history.history["val_acc"])))
+            print("Min of loss: {}, val_loss: {}".
+                  format(min(history.history["loss"]), min(history.history["val_loss"])))
     else:
         # load test dataset
         pd = PhaseLoader(filename=test_dataset)
