@@ -52,7 +52,7 @@ if __name__ == "__main__":
                         help="set the station name, it supports currently only LPAZ and URZ")
     parser.add_argument("-v", "--verbose", type=int, default=0,
                         help="set the verbosity)")
-    parser.add_argument("-p", "--phase_length", default="URZ 6840 6840 6840 20520, LPAZ 480 480 480 1440",
+    parser.add_argument("-p", "--phase_length", default="URZ 6840 6840 6840 20520",
                         help="set the number of entries of phases per stations to be read from the dataset.\n" +
                              "The default is for the training, for the test use 'URZ 2280 2280 2280 6840, " +
                              "LPAZ 160 160 160 480'")
