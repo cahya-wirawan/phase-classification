@@ -12,10 +12,11 @@ class PhaseDataset(object):
     y_indices = ['CLASS_PHASE']
     phase_index = {'regP':0, 'regS':1, 'tele':2, 'N':3}
 
-    def __init__(self, filename):
+    def __init__(self, filename, random_state=1):
         self.df = pd.read_csv(filepath_or_buffer=filename)
         self.dataset_train = {}
         self.dataset_test = {}
+        self.random_state = random_state
 
     def get_dataset(self, stations, phase_list, split_ratio=0.75, manual=False):
         """
@@ -48,23 +49,23 @@ class PhaseDataset(object):
 
         for p in PhaseDataset.phases:
             if p == 'N':
-                dataset_phases[p] = dataset_phases[p].sample(sample_N_count, random_state=11)
+                dataset_phases[p] = dataset_phases[p].sample(sample_N_count, random_state=self.random_state)
             else:
-                dataset_phases[p] = dataset_phases[p].sample(sample_PST_count, random_state=11)
+                dataset_phases[p] = dataset_phases[p].sample(sample_PST_count, random_state=self.random_state)
 
         ds = {}
         train_x = None
         train_y = None
         test_x = None
         test_y = None
-        for pl in phase_list:
+        for pl in sorted(phase_list):
             ds[pl] = None
             for p in phase_list[pl]:
                 if ds[pl] is None:
                     ds[pl] = dataset_phases[p]
                 else:
                     ds[pl] = pd.concat([ds[pl], dataset_phases[p]])
-            ds[pl] = ds[pl].sample(frac=1)
+            ds[pl] = ds[pl].sample(frac=1, random_state=self.random_state)
             print("ds {}:{}".format(pl, ds[pl].shape))
             train_length = int(split_ratio*len(ds[pl]))
             self.dataset_train[pl] = ds[pl][:train_length]
@@ -92,17 +93,18 @@ class PhaseDataset(object):
                                          [PhaseDataset.phase_index[y[0]]
                                           for y in self.dataset_test[pl][PhaseDataset.y_indices].values.tolist()]))
 
-
         train_y = np_utils.to_categorical(train_y, len(phase_list))
         test_y = np_utils.to_categorical(test_y, len(phase_list))
 
         return train_x, train_y, test_x, test_y
 
-"""
+
 if __name__ == "__main__":
-    phase_dataset = PhaseDataset(filename="data/phase/ml_features.csv")
-    dataset_train, dataset_test = phase_dataset.get_dataset(stations=["LPAZ"],
-                                                            phase_list={'P':['regP'], 'S':['regS'],'T':['tele'], 'N':['N']})
+    phase_dataset = PhaseDataset(filename="data/phase/ml_features_tiny.csv")
+    train_x, train_y, test_x, test_y = phase_dataset.\
+        get_dataset(stations=["LPAZ"],
+                    phase_list={'P':['regP'], 'S':['regS'], 'T':['tele'], 'N':['N']},
+                    split_ratio=0.75, manual=False)
     #                                                        phase_list={'PST':['regP', 'regS', 'tele'], 'N':['N']})
-    # print(dataset_train)
-"""
+    print(len(train_x), len(train_y), len(test_x), len(test_y))
+    print(train_x)

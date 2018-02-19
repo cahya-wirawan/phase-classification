@@ -1,11 +1,11 @@
-from random import shuffle
+from random import shuffle, seed
 
 
-def phase_spliter(filename, filename_training, filename_test):
-    counter = {'LPAZ-P': 300, 'LPAZ-S': 120, 'LPAZ-T': 200, 'LPAZ-N': 500,
-                'URZ-P': 300, 'URZ-S': 120, 'URZ-T': 200, 'URZ-N': 500}
+def phase_spliter(filename, filename_training, filename_test, seed_number=10):
+    ds_test_counter = {'LPAZ-regP': 160, 'LPAZ-regS': 160, 'LPAZ-tele': 160, 'LPAZ-N': 480,
+                'URZ-regP': 2280, 'URZ-regS': 2280, 'URZ-tele': 2280, 'URZ-N': 6840}
 
-
+    seed(seed_number)
     with open(filename, "r") as file:
         f_train = open(filename_training, "w")
         f_test = open(filename_test, "w")
@@ -16,16 +16,18 @@ def phase_spliter(filename, filename_training, filename_test):
         shuffle(lines)
         for line in lines:
             row = line.split(',')
-            index = "{}-{}".format(row[1].strip('"'), row[4].strip('"'))
-            if index in counter:
-                if counter[index] == 0:
+            index = "{}-{}".format(row[1].strip('"'), row[6].strip('"'))
+            if index in ds_test_counter and row[8].strip('"') != "M":
+                if ds_test_counter[index] == 0:
                     f_train.write(line)
                 else:
                     f_test.write(line)
-                    counter[index] -= 1
+                    ds_test_counter[index] -= 1
 
-filename = "data/phase/ml_feature_bck2.csv"
-filename_training = "data/phase/ml_feature_bck2_train.csv"
-filename_test = "data/phase/ml_feature_bck2_test.csv"
 
-phase_spliter(filename, filename_training, filename_test)
+if __name__ == "__main__":
+    filename = "data/phase/ml_features.csv"
+    filename_training = "data/phase/ml_features_train.csv"
+    filename_test = "data/phase/ml_features_test.csv"
+
+    phase_spliter(filename, filename_training, filename_test)
