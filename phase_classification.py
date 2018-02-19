@@ -40,6 +40,8 @@ if __name__ == "__main__":
                         help="set the path to the test dataset")
     parser.add_argument("-m", "--model", default=None,
                         help="set the path to the pre-trained model/weights")
+    parser.add_argument("--cv", type=bool, default=False,
+                        help="enable / disable a full cross validation with n_splits=10")
     parser.add_argument("-e", "--epochs", type=int, default=2000,
                         help="set the epochs number)")
     parser.add_argument("-l", "--layers", default="128 128 64 48 48 32 32 48 32 16",
@@ -97,8 +99,12 @@ if __name__ == "__main__":
         estimator = KerasClassifier(build_fn=baseline_model, layers=layers, dropout=dropout,
                                     epochs=epochs, batch_size=500, verbose=args.verbose)
         kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-
-        results = cross_val_score(estimator, train_x, train_y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
+        if args.cv:
+            results = cross_val_score(estimator, train_x, train_y, cv=kfold,
+                                      fit_params={'callbacks':[checkpoint, tensorboard]})
+        else:
+            results = cross_val_score(estimator, train_x, train_y, cv=2,
+                                      fit_params={'callbacks':[checkpoint, tensorboard]})
         print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
     else:
         # load test dataset
