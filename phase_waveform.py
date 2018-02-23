@@ -39,11 +39,15 @@ class PhaseWaveform(object):
         waveforms = [None, None, None]
 
         for dat in data:
-            nsamp = dat[7]
+            nsamp = int(dat[7])
             chan = dat[3]
             if nsamp == 0:
                 continue
-            waveform = np.array(struct.unpack('%sf' % nsamp, codecs.decode(dat[9], 'hex_codec')))
+            try:
+                waveform = np.array(struct.unpack('%sf' % nsamp, codecs.decode(dat[9], 'hex_codec')))
+            except struct.error as err:
+                print(err)
+                continue
             waveforms[self.channel_index[chan]] = waveform
 
         return waveforms
