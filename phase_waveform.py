@@ -75,11 +75,11 @@ class PhaseWaveform(object):
             # for arid in sorted(list(set(self.dfw.ARID))):
             arids = list(set(self.dfw.ARID))
             for arid in arids:
-                #print("counter:", counter)
+                print("arid:{}, counter:{}".format(arid, counter))
                 if counter >= 30:
                     break
-                dff_current = self.dff[(self.dff.ARID==arid)]
-                dfw_current = self.dfw[(self.dfw.ARID==arid) & (self.dfw.SAMPRATE>0)]
+                dff_current = self.dff[(self.dff.ARID == arid)]
+                dfw_current = self.dfw[(self.dfw.ARID == arid) & (self.dfw.SAMPRATE>0)]
                 if len(dff_current) > 0 and len(dfw_current) >0:
                     phase = dff_current["CLASS_PHASE"].values[0]
                     station = dff_current["STA"].values[0]
@@ -88,14 +88,13 @@ class PhaseWaveform(object):
                     else:
                         phase_counter[phase] += 1
                     # print("{}:{}".format(arid, phase))
-                    if phase_counter[phase] <= 10:
-                        wavelets = self.get_wavelets(arid)
-                        if any(wavelet is None for wavelet in wavelets):
-                            continue
-                        group_arid = f.create_group("/station/{}/{}".format(station, arid))
-                        group_arid.create_dataset("phase", data=phase)
-                        group_arid.create_dataset("wavelet", data=wavelets)
-                        counter += 1
+                    wavelets = self.get_wavelets(arid)
+                    if any(wavelet is None for wavelet in wavelets):
+                        continue
+                    group_arid = f.create_group("/station/{}/{}".format(station, arid))
+                    group_arid.create_dataset("phase", data=phase)
+                    group_arid.create_dataset("wavelet", data=wavelets)
+                    counter += 1
 
 
 if __name__ == "__main__":
