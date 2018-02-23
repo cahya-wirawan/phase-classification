@@ -103,7 +103,7 @@ if __name__ == "__main__":
     FEATURES = "data/phase/ml_features.csv"
     WAVEFORMS_TINY = "data/phase/ml_waveforms_tiny.csv"
     WAVEFORMS = "data/phase/ml_waveforms.csv"
-    WAVELETS = "wavelets.hdf5"
+    WAVELETS = "data/phase/wavelets.hdf5"
 
     pw = PhaseWaveform(filename_features=FEATURES, filename_waveforms=WAVEFORMS)
     pw.save_wavelets(WAVELETS)
