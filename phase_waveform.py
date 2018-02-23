@@ -77,8 +77,8 @@ class PhaseWaveform(object):
             for arid in arids:
                 print("arid:{}, counter:{}".format(arid, counter))
                 dff_current = self.dff[(self.dff.ARID == arid)]
-                dfw_current = self.dfw[(self.dfw.ARID == arid) & (self.dfw.SAMPRATE>0)]
-                if len(dff_current) > 0 and len(dfw_current) >0:
+                dfw_current = self.dfw[(self.dfw.ARID == arid) & (self.dfw.SAMPRATE > 0)]
+                if len(dff_current) > 0 and len(dfw_current) > 0:
                     phase = dff_current["CLASS_PHASE"].values[0]
                     station = dff_current["STA"].values[0]
                     if phase not in phase_counter:
@@ -89,8 +89,7 @@ class PhaseWaveform(object):
                     wavelets = self.get_wavelets(arid)
                     if any(wavelet is None for wavelet in wavelets):
                         continue
-                    group_arid = f.create_group("/station/{}/{}".format(station, arid))
-                    group_arid.create_dataset("phase", data=phase)
+                    group_arid = f.create_group("/station/{}/{}/{}".format(station, phase, arid))
                     group_arid.create_dataset("wavelet", data=wavelets)
                     counter += 1
 
