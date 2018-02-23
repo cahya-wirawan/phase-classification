@@ -76,8 +76,6 @@ class PhaseWaveform(object):
             arids = list(set(self.dfw.ARID))
             for arid in arids:
                 print("arid:{}, counter:{}".format(arid, counter))
-                if counter >= 30:
-                    break
                 dff_current = self.dff[(self.dff.ARID == arid)]
                 dfw_current = self.dfw[(self.dfw.ARID == arid) & (self.dfw.SAMPRATE>0)]
                 if len(dff_current) > 0 and len(dfw_current) >0:
