@@ -18,25 +18,25 @@ from phase_loader import PhaseLoader
 
 
 # define baseline model
-def baseline_model(layers, dropout=0.1):
+def baseline_model(dropout=0.1):
     # create model
     model_bhe = Sequential()
     model_bhe.add(Convolution2D(32, 3, 3, activation='relu', input_shape=(40, 400, 1), data_format="channels_last"))
     model_bhe.add(Convolution2D(32, 3, 3, activation='relu'))
     model_bhe.add(MaxPooling2D(pool_size=(2,2)))
-    model_bhe.add(Dropout(0.25))
+    model_bhe.add(Dropout(dropout))
 
     model_bhz = Sequential()
     model_bhz.add(Convolution2D(32, 3, 3, activation='relu', input_shape=(40, 400, 1), data_format="channels_last"))
     model_bhz.add(Convolution2D(32, 3, 3, activation='relu'))
     model_bhz.add(MaxPooling2D(pool_size=(2,2)))
-    model_bhz.add(Dropout(0.25))
+    model_bhz.add(Dropout(dropout))
 
     model_bhn = Sequential()
     model_bhn.add(Convolution2D(32, 3, 3, activation='relu', input_shape=(40, 400, 1), data_format="channels_last"))
     model_bhn.add(Convolution2D(32, 3, 3, activation='relu'))
     model_bhn.add(MaxPooling2D(pool_size=(2,2)))
-    model_bhn.add(Dropout(0.25))
+    model_bhn.add(Dropout(dropout))
 
     model = Sequential()
     model.add(Merge([model_bhe, model_bhz, model_bhn], mode='concat'))
@@ -44,7 +44,7 @@ def baseline_model(layers, dropout=0.1):
     model_bhe.add(Dense(128, activation='relu'))
     model_bhe.add(Dropout(0.25))
     model_bhe.add(Dense(64, activation='relu'))
-    model_bhe.add(Dropout(0.25))
+    model_bhe.add(Dropout(dropout))
     model_bhe.add(Dense(2, activation='softmax'))
 
     # Compile model
@@ -56,9 +56,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-a", "--action", choices=["train", "test"], default="train",
                         help="set the action, either training or test the dataset")
-    parser.add_argument("--train_dataset", default="data/phase/ml_features_train.csv",
+    parser.add_argument("--train_dataset", default="data/phase/wavelets_train.hdf5",
                         help="set the path to the training dataset")
-    parser.add_argument("--test_dataset", default="data/phase/ml_features_test.csv",
+    parser.add_argument("--test_dataset", default="data/phase/wavelets_test.hdf5",
                         help="set the path to the test dataset")
     parser.add_argument("-m", "--model", default=None,
                         help="set the path to the pre-trained model/weights")
@@ -66,12 +66,8 @@ if __name__ == "__main__":
                         help="enable / disable a full cross validation with n_splits=10")
     parser.add_argument("-e", "--epochs", type=int, default=2000,
                         help="set the epochs number)")
-    parser.add_argument("-l", "--layers", default="128 128 64 48 48 32 32 48 32 16",
-                        help="set the hidden layers)")
     parser.add_argument("-d", "--dropout", type=float, default=0.1,
                         help="set the dropout)")
-    parser.add_argument("-s", "--stations", default="URZ",
-                        help="set the station name, it supports currently only LPAZ and URZ")
     parser.add_argument("-v", "--verbose", type=int, default=0,
                         help="set the verbosity)")
     parser.add_argument("-p", "--phase_length", default="URZ 6840 6840 6840 20520",
@@ -92,22 +88,17 @@ if __name__ == "__main__":
     try:
         for p in args.phase_length.split(","):
             s = p.strip().split(" ")
-            phase_length.update({s[0]:{"regP": int(s[1]), "regS": int(s[2]), "tele": int(s[3]), "N": int(s[4])}})
+            phase_length.update({s[0]: {"regP": int(s[1]), "regS": int(s[2]), "tele": int(s[3]), "N": int(s[4])}})
     except ValueError:
         print("It should be a list of a station name followed by four numbers.")
         exit(1)
     stations_lower = [station.lower() for station in sorted(phase_length.keys())]
     layers = []
-    try:
-        layers = [int(units) for units in args.layers.split(" ")]
-    except ValueError:
-        print("The layers should be a list of integer, delimited by a whitespace")
-        exit(1)
 
     dropout = args.dropout
     if args.model is None:
-        model_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
-            format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
+        model_file_path = "results/phase_weights_waveform_s_{}_d_{}.hdf5".\
+            format("_".join(stations_lower), dropout)
     else:
         model_file_path = args.model
 
@@ -121,14 +112,14 @@ if __name__ == "__main__":
                                      save_best_only=True, mode='max')
         if args.cv:
             kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-            estimator = KerasClassifier(build_fn=baseline_model, layers=layers, dropout=dropout,
+            estimator = KerasClassifier(build_fn=baseline_model, dropout=dropout,
                                         epochs=epochs, batch_size=500, verbose=args.verbose)
             results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn], train_y, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
 
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            model = baseline_model(layers=layers, dropout=dropout)
+            model = baseline_model(dropout=dropout)
             history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
                                 batch_size=10, epochs=epochs, verbose=args.verbose,
                                 validation_split=0.1, callbacks=[checkpoint, tensorboard])
