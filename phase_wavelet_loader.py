@@ -57,7 +57,8 @@ class PhaseWaveletLoader(object):
 
         dataset_y = np_utils.to_categorical(dataset_y, len(PhaseWaveletLoader.phases))
 
-        return dataset_x_bhe, dataset_x_bhz, dataset_x_bhn, dataset_y
+        return np.expand_dims(dataset_x_bhe, axis=3), np.expand_dims(dataset_x_bhz, axis=3), \
+               np.expand_dims(dataset_x_bhn, axis=3), np.array(dataset_y)
 
 
 if __name__ == "__main__":
