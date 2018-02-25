@@ -116,8 +116,7 @@ if __name__ == "__main__":
 
     dropout = args.dropout
     if args.model is None:
-        model_file_path = "results/mnist_weight.hdf5".\
-            format("_".join(stations_lower), dropout)
+        model_file_path = "results/mnist_weight.hdf5"
     else:
         model_file_path = args.model
 
@@ -150,8 +149,8 @@ if __name__ == "__main__":
                   format(min(history.history["loss"]), min(history.history["val_loss"])))
     else:
         # load test dataset
-        pd = PhaseWaveletLoader(filename=test_dataset)
-        test_x_bhe, test_x_bhz, test_x_bhn, test_y = pd.get_dataset(phase_length=phase_length)
+        # pd = PhaseWaveletLoader(filename=test_dataset)
+        # test_x_bhe, test_x_bhz, test_x_bhn, test_y = pd.get_dataset(phase_length=phase_length)
 
 
         # load model & weight
@@ -160,9 +159,9 @@ if __name__ == "__main__":
 
         # evaluate loaded model on test data
         loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        score = loaded_model.evaluate(mnist["test_x"], mnist["test_x"], verbose=0)
+        score = loaded_model.evaluate(mnist["test_x"], mnist["test_y"], verbose=0)
         prediction = loaded_model.predict(mnist["test_x"], verbose=0)
-        cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
+        cm = confusion_matrix(mnist["test_y"].argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
         phases = ['regP', 'regS', 'tele', 'N']
