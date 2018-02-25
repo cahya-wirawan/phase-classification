@@ -6,7 +6,7 @@ from tensorflow.contrib.learn.python.learn.datasets.mnist import DataSet
 
 SOURCE_URL = 'https://storage.googleapis.com/cloud-deeplearning/kaggle_mnist_data/'
 DOWNLOAD_DATASETS=True
-DATA_DIR = '../input/'
+DATA_DIR = 'data/mnist/'
 KAGGLE_TRAIN_CSV = 'train.csv'
 KAGGLE_TEST_CSV = 'test.csv'
 SUBMISSION_FILE = 'submission_mnist.csv'
