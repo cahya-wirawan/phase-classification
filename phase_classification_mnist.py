@@ -116,15 +116,15 @@ if __name__ == "__main__":
 
     dropout = args.dropout
     if args.model is None:
-        model_file_path = "results/phase_weights_waveform_s_{}_d_{}.hdf5".\
+        model_file_path = "results/mnist_weight.hdf5".\
             format("_".join(stations_lower), dropout)
     else:
         model_file_path = args.model
 
+    mnist = custom_kaggle_mnist()
     if args.action == "train":
         # load train dataset
         # pwl = PhaseWaveletLoader(filename=train_dataset)
-        mnist = custom_kaggle_mnist()
         # train_x_bhe, train_x_bhz, train_x_bhn, train_y = pwl.get_dataset(phase_length=phase_length)
 
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
@@ -160,8 +160,8 @@ if __name__ == "__main__":
 
         # evaluate loaded model on test data
         loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        score = loaded_model.evaluate([test_x_bhe, test_x_bhz, test_x_bhn], test_y, verbose=0)
-        prediction = loaded_model.predict([test_x_bhe, test_x_bhz, test_x_bhn], verbose=0)
+        score = loaded_model.evaluate(mnist["test_x"], mnist["test_x"], verbose=0)
+        prediction = loaded_model.predict(mnist["test_x"], verbose=0)
         cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
