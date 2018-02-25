@@ -141,7 +141,7 @@ if __name__ == "__main__":
             model = baseline_model(dropout=dropout)
             print(model.summary())
             history = model.fit(x=mnist["train_x"], y=mnist["train_y"],
-                                batch_size=10, epochs=epochs, verbose=args.verbose,
+                                batch_size=500, epochs=epochs, verbose=args.verbose,
                                 validation_split=0.1, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".
                   format(max(history.history["acc"]), max(history.history["val_acc"])))
@@ -158,11 +158,11 @@ if __name__ == "__main__":
         print("Loaded model from disk")
 
         # evaluate loaded model on test data
-        loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         score = loaded_model.evaluate(mnist["test_x"], mnist["test_y"], verbose=0)
         prediction = loaded_model.predict(mnist["test_x"], verbose=0)
         cm = confusion_matrix(mnist["test_y"].argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
-        phases = ['regP', 'regS', 'tele', 'N']
+        phases = ['0', '1', '2', '3', '4', '5', '6', '7','8', '9']
         print_cm(cm, labels=phases)
