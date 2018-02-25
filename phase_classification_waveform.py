@@ -21,21 +21,30 @@ from phase_wavelet_loader import PhaseWaveletLoader
 
 
 # define baseline model
-def baseline_model(dropout=0.1):
+def baseline_model(dropout=0.25):
     input_bhe = Input(shape=(40, 400, 1), name='input_bhe')
-    conv_bhe = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(input_bhe)
+    conv_bhe = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhe)
+    conv_bhe = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhe)
+    mp_bhe = MaxPooling2D(pool_size=(2,2))(conv_bhe)
+    conv_bhe = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhe)
     conv_bhe = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhe)
     mp_bhe = MaxPooling2D(pool_size=(2,2))(conv_bhe)
     model_bhe = Dropout(dropout)(mp_bhe)
 
     input_bhz = Input(shape=(40, 400, 1), name='input_bhz')
-    conv_bhz = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(input_bhz)
+    conv_bhz = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhz)
+    conv_bhz = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhz)
+    mp_bhz = MaxPooling2D(pool_size=(2,2))(conv_bhz)
+    conv_bhz = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhz)
     conv_bhz = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhz)
     mp_bhz = MaxPooling2D(pool_size=(2,2))(conv_bhz)
     model_bhz = Dropout(dropout)(mp_bhz)
 
     input_bhn = Input(shape=(40, 400, 1), name='input_bhn')
-    conv_bhn = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(input_bhn)
+    conv_bhn = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhn)
+    conv_bhn = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhn)
+    mp_bhn = MaxPooling2D(pool_size=(2,2))(conv_bhn)
+    conv_bhn = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhn)
     conv_bhn = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhn)
     mp_bhn = MaxPooling2D(pool_size=(2,2))(conv_bhn)
     model_bhn = Dropout(dropout)(mp_bhn)
@@ -51,7 +60,7 @@ def baseline_model(dropout=0.1):
     output = Dense(2, activation='softmax', name='output')(model_fc)
 
     model = Model(inputs=[input_bhe, input_bhz, input_bhn], outputs=output)
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     return model
 
@@ -74,7 +83,7 @@ if __name__ == "__main__":
                         help="set the dropout)")
     parser.add_argument("-v", "--verbose", type=int, default=0,
                         help="set the verbosity)")
-    parser.add_argument("-p", "--phase_length", default="URZ 10 10 0 0",
+    parser.add_argument("-p", "--phase_length", default="URZ 1000 1000 1000 0",
                         help="set the number of entries of phases per stations to be read from the dataset.\n" +
                              "The default is for the training, for the test use 'URZ 2280 2280 2280 6840, " +
                              "LPAZ 160 160 160 480'")
@@ -142,7 +151,7 @@ if __name__ == "__main__":
         print("Loaded model from disk")
 
         # evaluate loaded model on test data
-        loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         score = loaded_model.evaluate([test_x_bhe, test_x_bhz, test_x_bhn], test_y, verbose=0)
         prediction = loaded_model.predict([test_x_bhe, test_x_bhz, test_x_bhn], verbose=0)
         cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
