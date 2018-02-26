@@ -9,7 +9,7 @@ class PhaseWaveletLoader(object):
     """
     PhaseWaveletLoader
     """
-    phases = ['regP', 'regS']
+    phases = ['regP', 'regS', 'tele', 'N']
     phase_index = {phase: index for index, phase in enumerate(phases)}
 
     def __init__(self, filename, random_state=1):
@@ -32,17 +32,22 @@ class PhaseWaveletLoader(object):
         dataset_x_bhz = None
         dataset_x_bhn = None
         dataset_y = None
-        for p in PhaseWaveletLoader.phases:
-            for s in phase_length:
-                arids_group = self.wvfile["/station/{}/{}".format(s, p)]
+        for s in phase_length:
+            for p in PhaseWaveletLoader.phases:
+                try:
+                    arids_group = self.wvfile["/station/{}/{}".format(s, p)]
+                except KeyError:
+                    continue
                 arids_length = len(arids_group)
                 arids = list(arids_group)
                 random.shuffle(arids)
-                arids_current = arids[:min(arids_length, phase_length[s][p])]
+                try:
+                    arids_current = arids[:min(arids_length, phase_length[s][p])]
+                except KeyError:
+                    continue
                 bhe = [arids_group["{}".format(arid)][0] for arid in arids_current]
                 bhz = [arids_group["{}".format(arid)][1] for arid in arids_current]
                 bhn = [arids_group["{}".format(arid)][2] for arid in arids_current]
-                wavelet_max = 0.0
                 for i in range(len(bhe)):
                     wavelet_max = max(abs(bhe[i].min()), bhe[i].max())
                     wavelet_max = max(wavelet_max, max(abs(bhz[i].min()), bhz[i].max()))
@@ -63,7 +68,7 @@ class PhaseWaveletLoader(object):
                     dataset_y = [PhaseWaveletLoader.phase_index[p]]*len(arids_current)
                 else:
                     dataset_y.extend([PhaseWaveletLoader.phase_index[p]]*len(arids_current))
-
+                print("{}/{}: {} wavelets loaded".format(s, p, len(arids_current)))
         dataset_y = np_utils.to_categorical(dataset_y, len(PhaseWaveletLoader.phases))
 
         return np.expand_dims(dataset_x_bhe, axis=3), np.expand_dims(dataset_x_bhz, axis=3), \
@@ -73,8 +78,8 @@ class PhaseWaveletLoader(object):
 if __name__ == "__main__":
     phase_wavelet = PhaseWaveletLoader(filename="data/phase/wavelets.hdf5")
     dataset_x_bhe, dataset_x_bhz, dataset_x_bhn, dataset_y = phase_wavelet.\
-        get_dataset(phase_length={"URZ":{'regP': 5, 'regS': 5},
-                                   "LPAZ":{'regP': 4, 'regS': 4}})
+        get_dataset(phase_length={"URZ":{'regP': 5, 'regS': 5, 'tele': 5, 'N': 5},
+                                   "LPAZ":{'regP': 4, 'regS': 4, 'tele': 5, 'N': 5}})
     # assert len(dataset_x) == 41
     # assert len(dataset_y) == 41
     print(len(dataset_x_bhe), len(dataset_y))
