@@ -3,8 +3,8 @@ from random import shuffle, seed
 
 
 def phase_spliter(filename, filename_training, filename_test, seed_number=10):
-    ds_test_counter = {'LPAZ-regP': 10, 'LPAZ-regS': 10, 'LPAZ-tele': 10, 'LPAZ-N': 20,
-                       'URZ-regP': 10, 'URZ-regS': 10, 'URZ-tele': 10, 'URZ-N': 20}
+    ds_test_counter = {'LPAZ-regP': 250, 'LPAZ-regS': 100, 'LPAZ-tele': 250, 'LPAZ-N': 500,
+                       'URZ-regP': 250, 'URZ-regS': 250, 'URZ-tele': 250, 'URZ-N': 500}
 
     seed(seed_number)
     with h5py.File(filename, "r") as f:
