@@ -57,7 +57,7 @@ def baseline_model(dropout=0.25):
     model_fc = Dropout(dropout)(model_fc)
     model_fc = Dense(64, activation='relu')(model_fc)
     model_fc = Dropout(dropout)(model_fc)
-    output = Dense(2, activation='softmax', name='output')(model_fc)
+    output = Dense(4, activation='softmax', name='output')(model_fc)
 
     model = Model(inputs=[input_bhe, input_bhz, input_bhn], outputs=output)
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
