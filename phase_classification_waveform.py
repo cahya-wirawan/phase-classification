@@ -52,17 +52,38 @@ def baseline_model(dropout=0.25):
     mp_bhn = MaxPooling2D(pool_size=(2,2))(conv_bhn)
     model_bhn = Dropout(dropout)(mp_bhn)
 
-    model_concatenated = concatenate([model_bhe, model_bhz, model_bhn])
-    model_flatten = Flatten()(model_concatenated)
+    input_bhe_stats = Input(shape=(6, 1), name='input_bhe_stats')
+    model_bhe_stats = Dense(32, activation='relu')(input_bhe_stats)
+    model_bhe_stats = Dense(32, activation='relu')(model_bhe_stats)
+    model_bhe_stats = Dropout(dropout)(model_bhe_stats)
 
-    model_fc = Dense(128, activation='relu')(model_flatten)
+    input_bhz_stats = Input(shape=(6, 1), name='input_bhz_stats')
+    model_bhz_stats = Dense(32, activation='relu')(input_bhz_stats)
+    model_bhz_stats = Dense(32, activation='relu')(model_bhz_stats)
+    model_bhz_stats = Dropout(dropout)(model_bhz_stats)
+
+    input_bhn_stats = Input(shape=(6, 1), name='input_bhn_stats')
+    model_bhn_stats = Dense(32, activation='relu')(input_bhn_stats)
+    model_bhn_stats = Dense(32, activation='relu')(model_bhn_stats)
+    model_bhn_stats = Dropout(dropout)(model_bhn_stats)
+
+    model_stats_concatenated = concatenate([model_bhe_stats, model_bhz_stats, model_bhn_stats])
+    model_stats_flatten = Flatten()(model_stats_concatenated)
+
+    model_wavelet_concatenated = concatenate([model_bhe, model_bhz, model_bhn])
+    model_wavelet_flatten = Flatten()(model_wavelet_concatenated)
+
+    model_all_concatenated = concatenate([model_wavelet_flatten, model_stats_flatten])
+
+    model_fc = Dense(128, activation='relu')(model_all_concatenated)
     model_fc = Dense(64, activation='relu')(model_fc)
     model_fc = Dropout(dropout)(model_fc)
     model_fc = Dense(64, activation='relu')(model_fc)
     model_fc = Dropout(dropout)(model_fc)
     output = Dense(4, activation='softmax', name='output')(model_fc)
 
-    model = Model(inputs=[input_bhe, input_bhz, input_bhn], outputs=output)
+    model = Model(inputs=[input_bhe, input_bhz, input_bhn,
+                          input_bhe_stats, input_bhz_stats, input_bhn_stats], outputs=output)
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     return model
@@ -121,7 +142,9 @@ if __name__ == "__main__":
     if args.action == "train":
         # load train dataset
         pwl = PhaseWaveletLoader(filename=train_dataset)
-        train_x_bhe, train_x_bhz, train_x_bhn, train_y = pwl.get_dataset(phase_length=phase_length)
+        train_x_bhe, train_x_bhz, train_x_bhn, \
+        train_x_bhe_stats, train_x_bhz_stats, train_x_bhn_stats, \
+        train_y = pwl.get_dataset(phase_length=phase_length)
 
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(model_file_path, monitor='acc', verbose=args.verbose,
@@ -130,14 +153,17 @@ if __name__ == "__main__":
             kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
             estimator = KerasClassifier(build_fn=baseline_model, dropout=dropout,
                                         epochs=epochs, batch_size=50, verbose=args.verbose)
-            results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn], train_y, cv=kfold,
+            results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn,
+                                                  train_x_bhe_stats, train_x_bhz_stats, train_x_bhn_stats],
+                                      train_y, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
 
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
             model = baseline_model(dropout=dropout)
             print(model.summary())
-            history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
+            history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn,
+                                   train_x_bhe_stats, train_x_bhz_stats, train_x_bhn_stats], y=train_y,
                                 batch_size=50, epochs=epochs, verbose=args.verbose,
                                 validation_split=0.1, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".

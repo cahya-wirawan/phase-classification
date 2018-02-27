@@ -3,6 +3,7 @@ import numpy as np
 from keras.utils import np_utils
 import h5py
 import random
+from scipy.stats import describe
 
 
 class PhaseWaveletLoader(object):
@@ -32,6 +33,9 @@ class PhaseWaveletLoader(object):
         dataset_x_bhe = None
         dataset_x_bhz = None
         dataset_x_bhn = None
+        dataset_x_bhe_stats = None
+        dataset_x_bhz_stats = None
+        dataset_x_bhn_stats = None
         dataset_y = None
         for s in phase_length:
             for p in PhaseWaveletLoader.phases:
@@ -51,7 +55,19 @@ class PhaseWaveletLoader(object):
                 bhe = [arids_group["{}".format(arid)][0] for arid in arids_current]
                 bhz = [arids_group["{}".format(arid)][1] for arid in arids_current]
                 bhn = [arids_group["{}".format(arid)][2] for arid in arids_current]
+                bhe_stats = [None]*len(bhe)
+                bhz_stats = [None]*len(bhz)
+                bhn_stats = [None]*len(bhn)
                 for i in range(len(bhe)):
+                    stats = list(describe(bhe[i], axis=None))
+                    bhe_stats[i] = stats[2:]
+                    bhe_stats[i].extend(stats[1])
+                    stats = list(describe(bhz[i], axis=None))
+                    bhz_stats[i] = stats[2:]
+                    bhz_stats[i].extend(stats[1])
+                    stats = list(describe(bhn[i], axis=None))
+                    bhn_stats[i] = stats[2:]
+                    bhn_stats[i].extend(stats[1])
                     wavelet_max = max(abs(bhe[i].min()), bhe[i].max())
                     wavelet_max = max(wavelet_max, max(abs(bhz[i].min()), bhz[i].max()))
                     wavelet_max = max(wavelet_max, max(abs(bhn[i].min()), bhn[i].max()))
@@ -63,10 +79,16 @@ class PhaseWaveletLoader(object):
                     dataset_x_bhe = bhe
                     dataset_x_bhz = bhz
                     dataset_x_bhn = bhn
+                    dataset_x_bhe_stats = bhe_stats
+                    dataset_x_bhz_stats = bhz_stats
+                    dataset_x_bhn_stats = bhn_stats
                 else:
                     dataset_x_bhe = np.concatenate([dataset_x_bhe, bhe])
                     dataset_x_bhz = np.concatenate([dataset_x_bhz, bhz])
                     dataset_x_bhn = np.concatenate([dataset_x_bhn, bhn])
+                    dataset_x_bhe_stats = np.concatenate([dataset_x_bhe_stats, bhe_stats])
+                    dataset_x_bhz_stats = np.concatenate([dataset_x_bhz_stats, bhz_stats])
+                    dataset_x_bhn_stats = np.concatenate([dataset_x_bhn_stats, bhn_stats])
                 if dataset_y is None:
                     dataset_y = [PhaseWaveletLoader.phase_index[p]]*len(arids_current)
                 else:
@@ -81,9 +103,17 @@ class PhaseWaveletLoader(object):
         np.random.shuffle(dataset_x_bhn)
         np.random.seed(self.random_state)
         np.random.shuffle(dataset_y)
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_x_bhe_stats)
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_x_bhz_stats)
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_x_bhn_stats)
 
         return np.expand_dims(dataset_x_bhe, axis=3), np.expand_dims(dataset_x_bhz, axis=3), \
-               np.expand_dims(dataset_x_bhn, axis=3), np.array(dataset_y)
+               np.expand_dims(dataset_x_bhn, axis=3), np.expand_dims(dataset_x_bhe_stats, axis=3), \
+               np.expand_dims(dataset_x_bhz_stats, axis=3), np.expand_dims(dataset_x_bhn_stats, axis=3), \
+               np.array(dataset_y)
 
 
 if __name__ == "__main__":
