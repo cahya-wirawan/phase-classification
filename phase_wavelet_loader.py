@@ -35,6 +35,8 @@ class PhaseWaveletLoader(object):
         dataset_y = None
         for s in phase_length:
             for p in PhaseWaveletLoader.phases:
+                if phase_length[s][p] == 0:
+                    continue
                 try:
                     arids_group = self.wvfile["/station/{}/{}".format(s, p)]
                 except KeyError:
