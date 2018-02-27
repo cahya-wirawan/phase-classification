@@ -19,6 +19,7 @@ class PhaseWaveletLoader(object):
         """
         self.wvfile = h5py.File(filename, "r")
         random.seed(random_state)
+        self.random_state = random_state
 
     def get_dataset(self, phase_length, manual=False):
         """
@@ -70,6 +71,14 @@ class PhaseWaveletLoader(object):
                     dataset_y.extend([PhaseWaveletLoader.phase_index[p]]*len(arids_current))
                 print("{}/{}: {} wavelets loaded".format(s, p, len(arids_current)))
         dataset_y = np_utils.to_categorical(dataset_y, len(PhaseWaveletLoader.phases))
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_x_bhe)
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_x_bhz)
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_x_bhn)
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_y)
 
         return np.expand_dims(dataset_x_bhe, axis=3), np.expand_dims(dataset_x_bhz, axis=3), \
                np.expand_dims(dataset_x_bhn, axis=3), np.array(dataset_y)

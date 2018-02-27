@@ -126,7 +126,7 @@ if __name__ == "__main__":
         if args.cv:
             kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
             estimator = KerasClassifier(build_fn=baseline_model, dropout=dropout,
-                                        epochs=epochs, batch_size=500, verbose=args.verbose)
+                                        epochs=epochs, batch_size=50, verbose=args.verbose)
             results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn], train_y, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
             model = baseline_model(dropout=dropout)
             print(model.summary())
             history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
-                                batch_size=10, epochs=epochs, verbose=args.verbose,
+                                batch_size=50, epochs=epochs, verbose=args.verbose,
                                 validation_split=0.1, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".
                   format(max(history.history["acc"]), max(history.history["val_acc"])))
