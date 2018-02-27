@@ -59,6 +59,7 @@ class PhaseWaveletLoader(object):
                 bhz_stats = [None]*len(bhz)
                 bhn_stats = [None]*len(bhn)
                 for i in range(len(bhe)):
+                    """
                     stats = list(describe(bhe[i], axis=None))
                     bhe_stats[i] = stats[2:]
                     bhe_stats[i].extend(stats[1])
@@ -68,6 +69,10 @@ class PhaseWaveletLoader(object):
                     stats = list(describe(bhn[i], axis=None))
                     bhn_stats[i] = stats[2:]
                     bhn_stats[i].extend(stats[1])
+                    """
+                    bhe_stats[i] = [1]*6
+                    bhz_stats[i] = [1]*6
+                    bhn_stats[i] = [1]*6
                     wavelet_max = max(abs(bhe[i].min()), bhe[i].max())
                     wavelet_max = max(wavelet_max, max(abs(bhz[i].min()), bhz[i].max()))
                     wavelet_max = max(wavelet_max, max(abs(bhn[i].min()), bhn[i].max()))
