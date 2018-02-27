@@ -26,6 +26,7 @@ def baseline_model(dropout=0.25):
     conv_bhe = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhe)
     conv_bhe = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhe)
     mp_bhe = MaxPooling2D(pool_size=(2,2))(conv_bhe)
+    mp_bhe = Dropout(dropout)(mp_bhe)
     conv_bhe = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhe)
     conv_bhe = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhe)
     mp_bhe = MaxPooling2D(pool_size=(2,2))(conv_bhe)
@@ -35,6 +36,7 @@ def baseline_model(dropout=0.25):
     conv_bhz = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhz)
     conv_bhz = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhz)
     mp_bhz = MaxPooling2D(pool_size=(2,2))(conv_bhz)
+    mp_bhz = Dropout(dropout)(mp_bhz)
     conv_bhz = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhz)
     conv_bhz = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhz)
     mp_bhz = MaxPooling2D(pool_size=(2,2))(conv_bhz)
@@ -44,6 +46,7 @@ def baseline_model(dropout=0.25):
     conv_bhn = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhn)
     conv_bhn = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhn)
     mp_bhn = MaxPooling2D(pool_size=(2,2))(conv_bhn)
+    mp_bhn = Dropout(dropout)(mp_bhn)
     conv_bhn = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhn)
     conv_bhn = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhn)
     mp_bhn = MaxPooling2D(pool_size=(2,2))(conv_bhn)
@@ -57,7 +60,7 @@ def baseline_model(dropout=0.25):
     model_fc = Dropout(dropout)(model_fc)
     model_fc = Dense(64, activation='relu')(model_fc)
     model_fc = Dropout(dropout)(model_fc)
-    output = Dense(2, activation='softmax', name='output')(model_fc)
+    output = Dense(4, activation='softmax', name='output')(model_fc)
 
     model = Model(inputs=[input_bhe, input_bhz, input_bhn], outputs=output)
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -126,7 +129,7 @@ if __name__ == "__main__":
         if args.cv:
             kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
             estimator = KerasClassifier(build_fn=baseline_model, dropout=dropout,
-                                        epochs=epochs, batch_size=500, verbose=args.verbose)
+                                        epochs=epochs, batch_size=50, verbose=args.verbose)
             results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn], train_y, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
 
@@ -135,7 +138,7 @@ if __name__ == "__main__":
             model = baseline_model(dropout=dropout)
             print(model.summary())
             history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
-                                batch_size=10, epochs=epochs, verbose=args.verbose,
+                                batch_size=50, epochs=epochs, verbose=args.verbose,
                                 validation_split=0.1, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".
                   format(max(history.history["acc"]), max(history.history["val_acc"])))
