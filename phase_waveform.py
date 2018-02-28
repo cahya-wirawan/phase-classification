@@ -53,13 +53,13 @@ class PhaseWaveform(object):
 
         return waveforms
 
-    def get_wavelets(self, arid, logarithmic=True):
+    def get_wavelets(self, arid, logarithmic=True, log_after=True):
         waveforms = self.get_waveforms(arid)
         wavelets = [None, None, None]
         for i, waveform in enumerate(waveforms):
             if waveform is None:
                 continue
-            if logarithmic:
+            if logarithmic and not log_after:
                 for j, value in enumerate(waveform):
                     if value >= 0:
                         value = math.log10(value+1)
@@ -68,11 +68,19 @@ class PhaseWaveform(object):
                     waveform[j] = value
             widths = np.arange(1, 41)
             wavelet = signal.cwt(waveform, signal.ricker, widths)
+            if logarithmic and log_after:
+                wavelet_row, wavelet_columns = wavelet.shape
+                for k in range(wavelet_row):
+                    for l in range(wavelet_columns):
+                        if wavelet[k][l] >= 0:
+                            wavelet[k][l] = math.log10(wavelet[k][l]+1)
+                        else:
+                            wavelet[k][l] = -math.log10(abs(wavelet[k][l])+1)
             wavelets[i] = wavelet
 
         return wavelets
 
-    def save_wavelets(self, filename, logarithmic=True):
+    def save_wavelets(self, filename, logarithmic=True, log_after=True):
         with h5py.File(filename, "w") as f:
             station = f.create_group("station")
             # urz = station.create_group("URZ")
@@ -97,7 +105,7 @@ class PhaseWaveform(object):
                     else:
                         phase_counter[phase] += 1
                     # print("{}:{}".format(arid, phase))
-                    wavelets = self.get_wavelets(arid, logarithmic)
+                    wavelets = self.get_wavelets(arid, logarithmic, log_after=log_after)
                     if any(wavelet is None for wavelet in wavelets):
                         continue
                     ds = f.create_dataset("/station/{}/{}".format(station, arid), data=wavelets)
@@ -120,6 +128,11 @@ if __name__ == "__main__":
     parser.add_argument('--logarithmic', dest='logarithmic', action='store_true')
     parser.add_argument('--no-logarithmic', dest='logarithmic', action='store_false')
     parser.set_defaults(logarithmic=True)
+    parser.add_argument("--log_after", dest='log_after', action='store_true',
+                        help="apply log before or after wavelet function")
+    parser.add_argument("--log_before", dest='log_after', action='store_false',
+                        help="apply log before or after wavelet function")
+    parser.set_defaults(log_after=True)
 
     args = parser.parse_args()
 
@@ -131,5 +144,5 @@ if __name__ == "__main__":
     else:
         wavelets_filename = args.wavelets_filename
     print(wavelets_filename)
-    pw = PhaseWaveform(filename_features=FEATURES, filename_waveforms=WAVEFORMS)
-    pw.save_wavelets(wavelets_filename, args.logarithmic)
+    pw = PhaseWaveform(filename_features=FEATURES, filename_waveforms=WAVEFORMS_TINY)
+    pw.save_wavelets(wavelets_filename, args.logarithmic, args.log_after)
