@@ -3,7 +3,7 @@ import numpy as np
 from keras.utils import np_utils
 import h5py
 import random
-
+from scipy.ndimage import zoom
 
 class PhaseWaveletLoader(object):
     """
@@ -48,9 +48,16 @@ class PhaseWaveletLoader(object):
                     arids_current = arids[:min(arids_length, phase_length[s][p])]
                 except KeyError:
                     continue
-                bhe = [arids_group["{}".format(arid)][0] for arid in arids_current]
-                bhz = [arids_group["{}".format(arid)][1] for arid in arids_current]
-                bhn = [arids_group["{}".format(arid)][2] for arid in arids_current]
+                bhe = []
+                bhz = []
+                bhn = []
+                for arid in arids_current:
+                    wavelet = zoom(arids_group["{}".format(arid)][0], (3.5, 1))
+                    bhe.append(wavelet)
+                    wavelet = zoom(arids_group["{}".format(arid)][1], (3.5, 1))
+                    bhz.append(wavelet)
+                    wavelet = zoom(arids_group["{}".format(arid)][2], (3.5, 1))
+                    bhn.append(wavelet)
                 if dataset_x_bhe is None:
                     dataset_x_bhe = bhe
                     dataset_x_bhz = bhz

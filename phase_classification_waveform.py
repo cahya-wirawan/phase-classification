@@ -18,7 +18,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from phase_utils import print_cm
 from phase_wavelet_loader import PhaseWaveletLoader
-import inception_v4
+from keras.applications.inception_v3 import InceptionV3
 
 def cnn_simple(dropout=0.25, activation='relu'):
     input_bhe = Input(shape=(40, 400, 1), name='input_bhe')
@@ -70,7 +70,8 @@ def cnn_simple(dropout=0.25, activation='relu'):
 # define baseline model
 def baseline_model(dropout=0.25, activation='relu', inception=False):
     if inception:
-        model = inception_v4.create_model(num_classes=4)
+        input_tensor = Input(shape=(140, 400, 3))
+        model = InceptionV3(input_tensor=input_tensor, weights=None, include_top=True, classes=4)
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         return model
     else:
@@ -156,11 +157,11 @@ if __name__ == "__main__":
                 x = np.concatenate([train_x_bhe, train_x_bhz, train_x_bhn], axis=3)
                 print("shape: ", x.shape)
                 history = model.fit(x=x, y=train_y,
-                                    batch_size=50, epochs=epochs, verbose=args.verbose,
+                                    batch_size=20, epochs=epochs, verbose=args.verbose,
                                     validation_split=0.1, callbacks=[checkpoint, tensorboard])
             else:
                 history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
-                                    batch_size=50, epochs=epochs, verbose=args.verbose,
+                                    batch_size=10, epochs=epochs, verbose=args.verbose,
                                     validation_split=0.1, callbacks=[checkpoint, tensorboard])
 
             print("Max of acc: {}, val_acc: {}".
