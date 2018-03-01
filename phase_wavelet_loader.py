@@ -51,14 +51,6 @@ class PhaseWaveletLoader(object):
                 bhe = [arids_group["{}".format(arid)][0] for arid in arids_current]
                 bhz = [arids_group["{}".format(arid)][1] for arid in arids_current]
                 bhn = [arids_group["{}".format(arid)][2] for arid in arids_current]
-                for i in range(len(bhe)):
-                    wavelet_max = max(abs(bhe[i].min()), bhe[i].max())
-                    wavelet_max = max(wavelet_max, max(abs(bhz[i].min()), bhz[i].max()))
-                    wavelet_max = max(wavelet_max, max(abs(bhn[i].min()), bhn[i].max()))
-                    if wavelet_max != 0.0:
-                        bhe[i] = bhe[i]/wavelet_max
-                        bhz[i] = bhz[i]/wavelet_max
-                        bhn[i] = bhn[i]/wavelet_max
                 if dataset_x_bhe is None:
                     dataset_x_bhe = bhe
                     dataset_x_bhz = bhz
