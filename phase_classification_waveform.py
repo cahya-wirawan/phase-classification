@@ -21,44 +21,44 @@ from phase_wavelet_loader import PhaseWaveletLoader
 
 
 # define baseline model
-def baseline_model(dropout=0.25):
+def baseline_model(dropout=0.25, activation='relu'):
     input_bhe = Input(shape=(40, 400, 1), name='input_bhe')
-    conv_bhe = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhe)
-    conv_bhe = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhe)
+    conv_bhe = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(input_bhe)
+    conv_bhe = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(conv_bhe)
     mp_bhe = MaxPooling2D(pool_size=(2,2))(conv_bhe)
     mp_bhe = Dropout(dropout)(mp_bhe)
-    conv_bhe = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhe)
-    conv_bhe = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhe)
+    conv_bhe = Conv2D(32, (3, 3), activation=activation, data_format="channels_last")(mp_bhe)
+    conv_bhe = Conv2D(32, (3, 3), activation=activation, data_format="channels_last")(conv_bhe)
     mp_bhe = MaxPooling2D(pool_size=(2,2))(conv_bhe)
     model_bhe = Dropout(dropout)(mp_bhe)
 
     input_bhz = Input(shape=(40, 400, 1), name='input_bhz')
-    conv_bhz = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhz)
-    conv_bhz = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhz)
+    conv_bhz = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(input_bhz)
+    conv_bhz = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(conv_bhz)
     mp_bhz = MaxPooling2D(pool_size=(2,2))(conv_bhz)
     mp_bhz = Dropout(dropout)(mp_bhz)
-    conv_bhz = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhz)
-    conv_bhz = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhz)
+    conv_bhz = Conv2D(32, (3, 3), activation=activation, data_format="channels_last")(mp_bhz)
+    conv_bhz = Conv2D(32, (3, 3), activation=activation, data_format="channels_last")(conv_bhz)
     mp_bhz = MaxPooling2D(pool_size=(2,2))(conv_bhz)
     model_bhz = Dropout(dropout)(mp_bhz)
 
     input_bhn = Input(shape=(40, 400, 1), name='input_bhn')
-    conv_bhn = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(input_bhn)
-    conv_bhn = Conv2D(64, (3, 3), activation='relu', data_format="channels_last")(conv_bhn)
+    conv_bhn = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(input_bhn)
+    conv_bhn = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(conv_bhn)
     mp_bhn = MaxPooling2D(pool_size=(2,2))(conv_bhn)
     mp_bhn = Dropout(dropout)(mp_bhn)
-    conv_bhn = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(mp_bhn)
-    conv_bhn = Conv2D(32, (3, 3), activation='relu', data_format="channels_last")(conv_bhn)
+    conv_bhn = Conv2D(32, (3, 3), activation=activation, data_format="channels_last")(mp_bhn)
+    conv_bhn = Conv2D(32, (3, 3), activation=activation, data_format="channels_last")(conv_bhn)
     mp_bhn = MaxPooling2D(pool_size=(2,2))(conv_bhn)
     model_bhn = Dropout(dropout)(mp_bhn)
 
     model_concatenated = concatenate([model_bhe, model_bhz, model_bhn])
     model_flatten = Flatten()(model_concatenated)
 
-    model_fc = Dense(128, activation='relu')(model_flatten)
-    model_fc = Dense(64, activation='relu')(model_fc)
+    model_fc = Dense(128, activation=activation)(model_flatten)
+    model_fc = Dense(64, activation=activation)(model_fc)
     model_fc = Dropout(dropout)(model_fc)
-    model_fc = Dense(64, activation='relu')(model_fc)
+    model_fc = Dense(64, activation=activation)(model_fc)
     model_fc = Dropout(dropout)(model_fc)
     output = Dense(4, activation='softmax', name='output')(model_fc)
 
@@ -84,6 +84,8 @@ if __name__ == "__main__":
                         help="set the epochs number)")
     parser.add_argument("-d", "--dropout", type=float, default=0.1,
                         help="set the dropout)")
+    parser.add_argument("--activation", default="relu",
+                        help="set the activation")
     parser.add_argument("-v", "--verbose", type=int, default=0,
                         help="set the verbosity)")
     parser.add_argument("-p", "--phase_length", default="URZ 1000 1000 1000 0",
@@ -128,14 +130,14 @@ if __name__ == "__main__":
                                      save_best_only=True, mode='max')
         if args.cv:
             kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-            estimator = KerasClassifier(build_fn=baseline_model, dropout=dropout,
+            estimator = KerasClassifier(build_fn=baseline_model, dropout=dropout, activation=args.activation,
                                         epochs=epochs, batch_size=50, verbose=args.verbose)
             results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn], train_y, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
 
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            model = baseline_model(dropout=dropout)
+            model = baseline_model(dropout=dropout, activation=args.activation)
             print(model.summary())
             history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
                                 batch_size=50, epochs=epochs, verbose=args.verbose,
