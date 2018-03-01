@@ -18,10 +18,9 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from phase_utils import print_cm
 from phase_wavelet_loader import PhaseWaveletLoader
+import inception_v4
 
-
-# define baseline model
-def baseline_model(dropout=0.25, activation='relu'):
+def cnn_simple(dropout=0.25, activation='relu'):
     input_bhe = Input(shape=(40, 400, 1), name='input_bhe')
     conv_bhe = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(input_bhe)
     conv_bhe = Conv2D(64, (3, 3), activation=activation, data_format="channels_last")(conv_bhe)
@@ -68,6 +67,16 @@ def baseline_model(dropout=0.25, activation='relu'):
     return model
 
 
+# define baseline model
+def baseline_model(dropout=0.25, activation='relu', inception=False):
+    if inception:
+        model = inception_v4.create_model(num_classes=4)
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        return model
+    else:
+        return cnn_simple(dropout, activation)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-a", "--action", choices=["train", "test"], default="train",
@@ -92,6 +101,10 @@ if __name__ == "__main__":
                         help="set the number of entries of phases per stations to be read from the dataset.\n" +
                              "The default is for the training, for the test use 'URZ 2280 2280 2280 6840, " +
                              "LPAZ 160 160 160 480'")
+
+    parser.add_argument('--inception', dest='inception', action='store_true')
+    parser.add_argument('--no-inception', dest='inception', action='store_false')
+    parser.set_defaults(inception=False)
 
     args = parser.parse_args()
 
@@ -137,11 +150,19 @@ if __name__ == "__main__":
 
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            model = baseline_model(dropout=dropout, activation=args.activation)
+            model = baseline_model(dropout=dropout, activation=args.activation, inception=args.inception)
             print(model.summary())
-            history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
-                                batch_size=50, epochs=epochs, verbose=args.verbose,
-                                validation_split=0.1, callbacks=[checkpoint, tensorboard])
+            if args.inception:
+                x = np.concatenate([train_x_bhe, train_x_bhz, train_x_bhn], axis=3)
+                print("shape: ", x.shape)
+                history = model.fit(x=x, y=train_y,
+                                    batch_size=50, epochs=epochs, verbose=args.verbose,
+                                    validation_split=0.1, callbacks=[checkpoint, tensorboard])
+            else:
+                history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
+                                    batch_size=50, epochs=epochs, verbose=args.verbose,
+                                    validation_split=0.1, callbacks=[checkpoint, tensorboard])
+
             print("Max of acc: {}, val_acc: {}".
                   format(max(history.history["acc"]), max(history.history["val_acc"])))
             print("Min of loss: {}, val_loss: {}".
