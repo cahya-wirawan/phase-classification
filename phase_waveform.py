@@ -141,5 +141,5 @@ if __name__ == "__main__":
     else:
         wavelets_filename = args.wavelets_filename
     print(wavelets_filename)
-    pw = PhaseWaveform(filename_features=FEATURES, filename_waveforms=WAVEFORMS_TINY)
+    pw = PhaseWaveform(filename_features=FEATURES, filename_waveforms=WAVEFORMS)
     pw.save_wavelets(wavelets_filename, args.logarithmic, args.log_after)
