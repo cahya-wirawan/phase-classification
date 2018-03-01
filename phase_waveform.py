@@ -108,11 +108,8 @@ class PhaseWaveform(object):
                     wavelets = self.get_wavelets(arid, logarithmic, log_after=log_after)
                     if any(wavelet is None for wavelet in wavelets):
                         continue
-                    ds = f.create_dataset("/station/{}/{}".format(station, arid), data=wavelets)
-                    ds.attrs["phase"] = phase
+                    ds = f.create_dataset("/station/{}/{}/{}".format(station, phase, arid), data=wavelets)
                     ds.attrs["source"] = source
-
-
                     counter += 1
 
 
