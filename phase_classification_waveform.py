@@ -72,9 +72,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-a", "--action", choices=["train", "test"], default="train",
                         help="set the action, either training or test the dataset")
-    parser.add_argument("--train_dataset", default="data/phase/wavelets_train.hdf5",
+    parser.add_argument("--train_dataset", default="data/phase/wavelets_log_train.hdf5",
                         help="set the path to the training dataset")
-    parser.add_argument("--test_dataset", default="data/phase/wavelets_test.hdf5",
+    parser.add_argument("--test_dataset", default="data/phase/wavelets_log_test.hdf5",
                         help="set the path to the test dataset")
     parser.add_argument("-m", "--model", default=None,
                         help="set the path to the pre-trained model/weights")

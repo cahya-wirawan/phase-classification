@@ -79,7 +79,7 @@ class PhaseWaveletLoader(object):
 
 
 if __name__ == "__main__":
-    phase_wavelet = PhaseWaveletLoader(filename="data/phase/wavelets.hdf5")
+    phase_wavelet = PhaseWaveletLoader(filename="data/phase/wavelets_log.hdf5")
     dataset_x_bhe, dataset_x_bhz, dataset_x_bhn, dataset_y = phase_wavelet.\
         get_dataset(phase_length={"URZ":{'regP': 5, 'regS': 5, 'tele': 5, 'N': 5},
                                    "LPAZ":{'regP': 4, 'regS': 4, 'tele': 5, 'N': 5}})
