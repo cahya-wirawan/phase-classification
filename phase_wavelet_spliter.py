@@ -34,8 +34,8 @@ def phase_spliter(filename, filename_training, filename_test, seed_number=10):
 
 
 if __name__ == "__main__":
-    filename = "data/phase/wavelets.hdf5"
-    filename_training = "data/phase/wavelets_train.hdf5"
-    filename_test = "data/phase/wavelets_test.hdf5"
+    filename = "data/phase/wavelets_log.hdf5"
+    filename_training = "data/phase/wavelets_log_train.hdf5"
+    filename_test = "data/phase/wavelets_log_test.hdf5"
 
     phase_spliter(filename, filename_training, filename_test)
