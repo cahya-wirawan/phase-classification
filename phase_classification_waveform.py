@@ -178,9 +178,10 @@ if __name__ == "__main__":
         print("Loaded model from disk")
 
         # evaluate loaded model on test data
+        x = np.concatenate([test_x_bhe, test_x_bhz, test_x_bhn], axis=3)
         loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        score = loaded_model.evaluate([test_x_bhe, test_x_bhz, test_x_bhn], test_y, verbose=0)
-        prediction = loaded_model.predict([test_x_bhe, test_x_bhz, test_x_bhn], verbose=0)
+        score = loaded_model.evaluate(x, test_y, verbose=0)
+        prediction = loaded_model.predict(x, verbose=0)
         cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
