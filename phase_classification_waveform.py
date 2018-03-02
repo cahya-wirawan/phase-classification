@@ -166,7 +166,7 @@ if __name__ == "__main__":
         # load test dataset
         pd = PhaseWaveletLoader(filename_features="data/phase/ml_features.csv",
                                 filename_waveform=test_dataset)
-        test_x_bhe, test_x_bhz, test_x_bhn, test_y = pd.get_dataset(phase_length=phase_length)
+        test_x_bhe, test_x_bhz, test_x_bhn, test_x_features, test_y = pd.get_dataset(phase_length=phase_length)
 
         # load model & weight
         loaded_model = load_model(model_file_path)
@@ -174,8 +174,8 @@ if __name__ == "__main__":
 
         # evaluate loaded model on test data
         loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        score = loaded_model.evaluate([test_x_bhe, test_x_bhz, test_x_bhn], test_y, verbose=0)
-        prediction = loaded_model.predict([test_x_bhe, test_x_bhz, test_x_bhn], verbose=0)
+        score = loaded_model.evaluate([test_x_bhe, test_x_bhz, test_x_bhn, test_x_features], test_y, verbose=0)
+        prediction = loaded_model.predict([test_x_bhe, test_x_bhz, test_x_bhn, test_x_features], verbose=0)
         cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
