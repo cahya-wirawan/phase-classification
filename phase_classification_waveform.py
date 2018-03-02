@@ -8,7 +8,7 @@ from keras.layers import Dropout
 from keras.layers import Conv2D
 from keras.layers import MaxPooling2D
 from keras.layers import Flatten
-from keras.layers import concatenate
+from keras.layers import concatenate, add
 from keras.optimizers import SGD
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.callbacks import ModelCheckpoint, TensorBoard
@@ -58,11 +58,25 @@ def baseline_model(dropout=0.25, activation='relu'):
     model_fc = Dense(128, activation=activation)(model_flatten)
     model_fc = Dense(64, activation=activation)(model_fc)
     model_fc = Dropout(dropout)(model_fc)
-    model_fc = Dense(64, activation=activation)(model_fc)
-    model_fc = Dropout(dropout)(model_fc)
-    output = Dense(4, activation='softmax', name='output')(model_fc)
-
+    model_fc = Dense(32, activation=activation)(model_fc)
+    waveform_model = Dropout(dropout)(model_fc)
+    """
+    output = Dense(4, activation='softmax', name='output')(waveform_model)
     model = Model(inputs=[input_bhe, input_bhz, input_bhn], outputs=output)
+
+    """
+    input_features = Input(shape=(1, 16, 1), name='input_features')
+    features_fc = Dense(32, activation=activation)(input_features)
+    features_fc = Dense(32, activation=activation)(features_fc)
+    features_do = Dropout(dropout)(features_fc)
+    features_flatten = Flatten()(features_do)
+    features_model = Dense(32, activation=activation)(features_flatten)
+    
+    waveform_features_model = add([waveform_model, features_model])
+    output = Dense(4, activation='softmax', name='output')(waveform_features_model)
+
+    model = Model(inputs=[input_bhe, input_bhz, input_bhn, input_features], outputs=output)
+
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     return model
@@ -122,8 +136,10 @@ if __name__ == "__main__":
 
     if args.action == "train":
         # load train dataset
-        pwl = PhaseWaveletLoader(filename=train_dataset)
-        train_x_bhe, train_x_bhz, train_x_bhn, train_y = pwl.get_dataset(phase_length=phase_length)
+        pwl = PhaseWaveletLoader(filename_features="data/phase/ml_features.csv",
+                                 filename_waveform=train_dataset)
+        train_x_bhe, train_x_bhz, train_x_bhn, \
+        train_x_features, train_y = pwl.get_dataset(phase_length=phase_length)
 
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(model_file_path, monitor='acc', verbose=args.verbose,
@@ -132,14 +148,14 @@ if __name__ == "__main__":
             kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
             estimator = KerasClassifier(build_fn=baseline_model, dropout=dropout, activation=args.activation,
                                         epochs=epochs, batch_size=50, verbose=args.verbose)
-            results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn], train_y, cv=kfold,
-                                      fit_params={'callbacks':[checkpoint, tensorboard]})
+            results = cross_val_score(estimator, [train_x_bhe, train_x_bhz, train_x_bhn, train_x_features],
+                                      train_y, cv=kfold, fit_params={'callbacks':[checkpoint, tensorboard]})
 
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
             model = baseline_model(dropout=dropout, activation=args.activation)
             print(model.summary())
-            history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn], y=train_y,
+            history = model.fit(x=[train_x_bhe, train_x_bhz, train_x_bhn, train_x_features], y=train_y,
                                 batch_size=50, epochs=epochs, verbose=args.verbose,
                                 validation_split=0.1, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".
@@ -148,7 +164,8 @@ if __name__ == "__main__":
                   format(min(history.history["loss"]), min(history.history["val_loss"])))
     else:
         # load test dataset
-        pd = PhaseWaveletLoader(filename=test_dataset)
+        pd = PhaseWaveletLoader(filename_features="data/phase/ml_features.csv",
+                                filename_waveform=test_dataset)
         test_x_bhe, test_x_bhz, test_x_bhn, test_y = pd.get_dataset(phase_length=phase_length)
 
         # load model & weight
