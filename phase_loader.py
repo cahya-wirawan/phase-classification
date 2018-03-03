@@ -52,6 +52,12 @@ class PhaseLoader(object):
         dataset_y = [PhaseLoader.phase_index[y[0]] for y in dataset_y]
         dataset_y = np_utils.to_categorical(dataset_y, len(PhaseLoader.phases))
 
+        # randomize the order of the datasets
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_x)
+        np.random.seed(self.random_state)
+        np.random.shuffle(dataset_y)
+
         return dataset_x, dataset_y
 
 
