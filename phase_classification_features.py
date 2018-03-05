@@ -108,12 +108,12 @@ if __name__ == "__main__":
         else:
             model = baseline_model(layers=layers, dropout=dropout)
             print(model.summary())
-            class_weight = {0:100, 1:20, 2:5, 3:1}
+            class_weight = {0:1, 1:1, 2:1, 3:1}
             history = model.fit_generator(generator = pd.generate("train"),
                                 steps_per_epoch = pd.get_len("train")//batch_size,
                                 validation_data = pd.generate("validation"),
                                 validation_steps = pd.get_len("validation")//batch_size,
-                                use_multiprocessing=True, class_weight=class_weight,
+                                use_multiprocessing=True, class_weight=None,
                                 epochs=epochs, verbose=args.verbose, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".
                   format(max(history.history["acc"]), max(history.history["val_acc"])))
