@@ -41,6 +41,8 @@ if __name__ == "__main__":
                         help="set the path to the pre-trained model/weights")
     parser.add_argument("--cv", type=bool, default=False,
                         help="enable / disable a full cross validation with n_splits=10")
+    parser.add_argument("-b", "--batch_size", type=int, default=256,
+                        help="set the batch size)")
     parser.add_argument("-e", "--epochs", type=int, default=2000,
                         help="set the epochs number)")
     parser.add_argument("-l", "--layers", default="128 128 64 48 48 32 32 48 32 16",
@@ -82,7 +84,7 @@ if __name__ == "__main__":
         exit(1)
 
     dropout = args.dropout
-    batch_size = 256
+    batch_size = args.batch_size
     validation_split = 0.1
     if args.model is None:
         model_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
@@ -92,7 +94,8 @@ if __name__ == "__main__":
 
     if args.action == "train":
         # load train dataset
-        pd = PhaseFeaturesLoader(filename=train_dataset, validation_split=validation_split,phase_length=phase_length)
+        pd = PhaseFeaturesLoader(filename=train_dataset, validation_split=validation_split,
+                                 phase_length=phase_length, batch_size=batch_size)
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(model_file_path, monitor='acc', verbose=args.verbose,
                                      save_best_only=True, mode='max')
@@ -121,7 +124,7 @@ if __name__ == "__main__":
                   format(min(history.history["loss"]), min(history.history["val_loss"])))
     else:
         # load test dataset
-        pd = PhaseFeaturesLoader(filename=test_dataset, phase_length=phase_length)
+        pd = PhaseFeaturesLoader(filename=test_dataset, phase_length=phase_length, batch_size=batch_size)
         test_x, test_y = pd.get_dataset()
 
         # load model & weight

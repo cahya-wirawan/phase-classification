@@ -12,7 +12,7 @@ class PhaseFeaturesLoader(object):
     y_indices = ['CLASS_PHASE']
 
     def __init__(self, filename, random_state=1, dim_x=16, batch_size=32, shuffle=True, validation_split=0.1,
-                 phase_length={ "URZ":{'regP':100, 'regS':100, 'tele':100, 'N':300}}, manual=False):
+                 phase_length=None, manual=False):
         """
         :param filename:
         :param random_state:
@@ -23,7 +23,9 @@ class PhaseFeaturesLoader(object):
         self.shuffle = shuffle
         self.random_state = random_state
         self.df = pd.read_csv(filepath_or_buffer=filename)
-        self.phase_length = phase_length
+        self.phase_length = {"URZ":{'regP': 100, 'regS': 100, 'tele': 100, 'N': 300}}
+        if phase_length is not None:
+            self.phase_length = phase_length
         self.manual = manual
 
         if not manual:
@@ -33,7 +35,7 @@ class PhaseFeaturesLoader(object):
         dataset_phases = {}
         dataset_phases_all = None
         for p in PhaseFeaturesLoader.phases:
-            for s in phase_length:
+            for s in self.phase_length:
                 dp = self.df[(self.df['CLASS_PHASE'] == p) & (self.df['STA'] == s) & dataset]
                 dp_length = len(dp)
                 dp = dp.sample(min(dp_length, phase_length[s][p]),random_state=self.random_state)
@@ -91,7 +93,8 @@ class PhaseFeaturesLoader(object):
         X[:, :] = self.df[(self.df['ARID'].isin(ids))][PhaseFeaturesLoader.x_indices].values
         phases = self.df[(self.df['ARID'].isin(ids))][PhaseFeaturesLoader.y_indices].values
         y = [PhaseFeaturesLoader.phase_index[p[0]] for p in phases]
-        return X, self.sparsify(y, 4)
+        one_hot = self.sparsify(y, 4)
+        return X, one_hot
 
     def get_len(self, type="train"):
         if type=="train":
