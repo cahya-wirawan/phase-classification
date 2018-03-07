@@ -71,7 +71,8 @@ class PhaseFeaturesLoader(object):
 
                 # Generate data
                 X, y = self.__data_generation(ids_temp)
-
+                X = np.expand_dims(X, axis=1)
+                y = np.expand_dims(y, axis=1)
                 yield X, y
 
     def __get_exploration_order(self, ids):
@@ -129,6 +130,9 @@ class PhaseFeaturesLoader(object):
         np.random.shuffle(dataset_x)
         np.random.seed(self.random_state)
         np.random.shuffle(dataset_y)
+
+        dataset_x = np.expand_dims(dataset_x, axis=1)
+        dataset_y = np.expand_dims(dataset_y, axis=1)
 
         return dataset_x, dataset_y
 

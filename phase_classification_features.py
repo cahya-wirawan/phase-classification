@@ -1,8 +1,5 @@
 import argparse
 import numpy as np
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.callbacks import ModelCheckpoint, TensorBoard
 from keras.models import load_model
@@ -11,23 +8,8 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from phase_utils import print_cm
 from phase_features_loader import PhaseFeaturesLoader
-
-
-# define baseline model
-def baseline_model(layers, dropout=0.1):
-    # create model
-    model = Sequential()
-    model.add(Dense(layers[0], input_dim=16, activation='relu'))
-    model.add(Dropout(dropout))
-    for units in layers[1:]:
-        model.add(Dense(units, activation='relu'))
-        model.add(Dropout(dropout))
-    model.add(Dense(4, activation='softmax'))
-
-    # Compile model
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
-
+from phase_model_simple import model_simple
+from phase_model_resnet import model_resnet
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -92,6 +74,8 @@ if __name__ == "__main__":
     else:
         model_file_path = args.model
 
+    model = model_resnet
+
     if args.action == "train":
         # load train dataset
         pd = PhaseFeaturesLoader(filename=train_dataset, validation_split=validation_split,
@@ -102,14 +86,14 @@ if __name__ == "__main__":
         if args.cv:
             train_x, train_y = pd.get_dataset()
             kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-            estimator = KerasClassifier(build_fn=baseline_model, layers=layers, dropout=dropout,
+            estimator = KerasClassifier(build_fn=model, layers=layers, dropout=dropout,
                                         epochs=epochs, batch_size=500, verbose=args.verbose)
             results = cross_val_score(estimator, train_x, train_y, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
 
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            model = baseline_model(layers=layers, dropout=dropout)
+            model = model(layers=layers, dropout=dropout)
             print(model.summary())
             class_weight = {0:1, 1:1, 2:1, 3:1}
             history = model.fit_generator(generator = pd.generate("train"),
@@ -135,8 +119,8 @@ if __name__ == "__main__":
         loaded_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         score = loaded_model.evaluate(test_x, test_y, verbose=0)
         prediction = loaded_model.predict(test_x, verbose=0)
-        cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
         print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
         print("Confusion matrix:")
         phases = ['regP', 'regS', 'tele', 'N']
+        cm = confusion_matrix(test_y.argmax(axis=1), prediction.argmax(axis=1))
         print_cm(cm, labels=phases)
