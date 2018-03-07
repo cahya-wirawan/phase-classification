@@ -19,12 +19,12 @@ def model_resnet(layers, dropout=0.1, activation='relu', layer_number=10):
     block = Activation(activation)(block)
     for i in range(layer_number):
         if i != 0:
-            block = BatchNormalization()(block)
             block = Activation(activation)(block)
         block = Dense(32)(block)
-        block = BatchNormalization()(block)
+        block = Dropout(dropout)(block)
         block = Activation(activation)(block)
         block = Dense(32)(block)
+        block = Dropout(dropout)(block)
         block = add([first_layer, block])
 
     block = Activation(activation)(block)
