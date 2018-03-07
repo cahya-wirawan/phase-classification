@@ -67,7 +67,10 @@ class PhaseFeaturesLoader(object):
             imax = max(int(len(indexes)/self.batch_size), 1)
             for i in range(imax):
                 # Find list of IDs
-                ids_temp = [self.ids[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
+                if type == "train":
+                    ids_temp = [self.ids_train[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
+                else:
+                    ids_temp = [self.ids_validation[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
 
                 # Generate data
                 X, y = self.__data_generation(ids_temp)

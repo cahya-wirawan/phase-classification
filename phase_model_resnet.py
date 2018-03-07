@@ -27,6 +27,7 @@ def model_resnet(layers, dropout=0.1, activation='relu', layer_number=10):
         block = Dense(32)(block)
         block = add([first_layer, block])
 
+    block = Activation(activation)(block)
     output = Dense(4, activation='softmax')(block)
 
     model = Model(inputs=[input], outputs=output)

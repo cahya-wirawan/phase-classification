@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            model = model(layers=layers, dropout=dropout)
+            model = model(layers=layers, dropout=dropout, layer_number=10)
             print(model.summary())
             class_weight = {0:1, 1:1, 2:1, 3:1}
             history = model.fit_generator(generator = pd.generate("train"),
