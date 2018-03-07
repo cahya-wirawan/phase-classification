@@ -14,19 +14,20 @@ from keras.layers.normalization import BatchNormalization
 def model_resnet(layers, dropout=0.1, activation='relu', layer_number=10):
 
     input = Input(shape=(1, 16), name='input')
-    first_layer = Dense(32)(input)
-    block = BatchNormalization()(first_layer)
-    block = Activation(activation)(block)
+    first_layer = Dense(64)(input)
+    block = Activation(activation)(first_layer)
     for i in range(layer_number):
-        if i != 0:
-            block = Activation(activation)(block)
-        block = Dense(32)(block)
-        block = Dropout(dropout)(block)
+        block = Dense(64)(block)
         block = Activation(activation)(block)
-        block = Dense(32)(block)
         block = Dropout(dropout)(block)
-        block = add([first_layer, block])
+        block = Dense(16)(block)
+        block = Activation(activation)(block)
+        block = Dropout(dropout)(block)
+        block = add([input, block])
 
+    block = Activation(activation)(block)
+    block = Dropout(dropout)(block)
+    block = Dense(64)(block)
     block = Activation(activation)(block)
     output = Dense(4, activation='softmax')(block)
 
