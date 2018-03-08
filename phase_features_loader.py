@@ -127,6 +127,9 @@ class PhaseFeaturesLoader(object):
         """
 
         dataset_x = self.df[(self.df['ARID'].isin(self.ids))][PhaseFeaturesLoader.x_indices].values
+        # normalize the values:
+        dataset_x[:, 0:2] /= 90.0
+        dataset_x[:, 2:10] = np.log10(dataset_x[:, 2:10])
         dataset_y = self.df[(self.df['ARID'].isin(self.ids))][PhaseFeaturesLoader.y_indices].values.tolist()
         dataset_y = np.array([PhaseFeaturesLoader.phase_index[y[0]] for y in dataset_y])
         dataset_y = self.sparsify(dataset_y, len(PhaseFeaturesLoader.phases))
