@@ -7,8 +7,8 @@ class PhaseFeaturesLoader(object):
     """
     phases = ['regP', 'regS', 'tele', 'N']
     phase_index = {'regP':0, 'regS':1, 'tele':2, 'N':3}
-    x_indices = ['PER', 'RECT', 'PLANS', 'INANG1', 'INANG3', 'HMXMN', 'HVRATP', 'HVRAT', 'NAB', 'TAB',
-                 'HTOV1', 'HTOV2', 'HTOV3', 'HTOV4', 'HTOV5', 'SLOW']
+    x_indices = ['INANG1', 'INANG3', 'HMXMN', 'HVRATP', 'HVRAT', 'HTOV1', 'HTOV2', 'HTOV3', 'HTOV4', 'HTOV5',
+                 'PER', 'RECT', 'PLANS', 'NAB', 'TAB', 'SLOW']
     y_indices = ['CLASS_PHASE']
 
     def __init__(self, filename, random_state=1, dim_x=16, batch_size=32, shuffle=True, validation_split=0.1,
@@ -95,6 +95,9 @@ class PhaseFeaturesLoader(object):
 
         # Generate data
         X[:, :] = self.df[(self.df['ARID'].isin(ids))][PhaseFeaturesLoader.x_indices].values
+        # normalize the values:
+        X[:, 0:2] /= 90.0
+        X[:, 2:10] = np.log10(X[:, 2:10])
         phases = self.df[(self.df['ARID'].isin(ids))][PhaseFeaturesLoader.y_indices].values
         y = [PhaseFeaturesLoader.phase_index[p[0]] for p in phases]
         one_hot = self.sparsify(y, 4)
