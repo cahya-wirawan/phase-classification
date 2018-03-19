@@ -117,7 +117,7 @@ class PhaseFeaturesLoader(object):
         return np.array([[1 if y[i] == j else 0 for j in range(n_classes)]
                          for i in range(len(y))])
 
-    def get_dataset(self):
+    def get_dataset(self, expand_dim=True, y_onehot=True):
         """
         :param phase_length:
             { "URZ":{'regP':10, 'regS':10, 'tele':10, 'N':30},
@@ -132,7 +132,8 @@ class PhaseFeaturesLoader(object):
         dataset_x[:, 2:10] = np.log10(dataset_x[:, 2:10])
         dataset_y = self.df[(self.df['ARID'].isin(self.ids))][PhaseFeaturesLoader.y_indices].values.tolist()
         dataset_y = np.array([PhaseFeaturesLoader.phase_index[y[0]] for y in dataset_y])
-        dataset_y = self.sparsify(dataset_y, len(PhaseFeaturesLoader.phases))
+        if y_onehot:
+            dataset_y = self.sparsify(dataset_y, len(PhaseFeaturesLoader.phases))
 
         # randomize the order of the datasets
         np.random.seed(self.random_state)
@@ -140,8 +141,9 @@ class PhaseFeaturesLoader(object):
         np.random.seed(self.random_state)
         np.random.shuffle(dataset_y)
 
-        dataset_x = np.expand_dims(dataset_x, axis=1)
-        dataset_y = np.expand_dims(dataset_y, axis=1)
+        if expand_dim:
+            dataset_x = np.expand_dims(dataset_x, axis=1)
+            dataset_y = np.expand_dims(dataset_y, axis=1)
 
         return dataset_x, dataset_y
 
