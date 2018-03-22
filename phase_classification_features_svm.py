@@ -1,24 +1,40 @@
 import argparse
 import numpy as np
-import pickle
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.callbacks import ModelCheckpoint, TensorBoard
-from keras.models import load_model
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn import svm
 from sklearn.externals import joblib
 from phase_utils import print_cm
 from phase_features_loader import PhaseFeaturesLoader
-from phase_model_simple import model_simple
-from phase_model_resnet import model_resnet
-from phase_model_xgboost import model_xgboost
 from phase_model_svm import model_svm
 from imblearn.metrics import classification_report_imbalanced
-from imblearn.combine import SMOTETomek, SMOTEENN
+from sklearn.metrics import classification_report
 
+
+def print_report(model):
+    print("Best parameters set found on development set:")
+    print()
+    print(model.best_params_)
+    print()
+    print("Grid scores on development set:")
+    print()
+    means = model.cv_results_['mean_test_score']
+    stds = model.cv_results_['std_test_score']
+    for mean, std, params in zip(means, stds, model.cv_results_['params']):
+        print("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params))
+    print()
+    print("Detailed classification report:")
+    print()
+    print("The model is trained on the full development set.")
+    print("The scores are computed on the full evaluation set.")
+    print()
+    y_true, y_pred = test_y, model.predict(test_x)
+    print(classification_report(y_true, y_pred))
+    print()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -123,6 +139,7 @@ if __name__ == "__main__":
             # evaluate predictions
             accuracy = accuracy_score(test_y, predictions)
             print("Accuracy: %.2f%%" % (accuracy * 100.0))
+            print_report(model)
     else:
         # load test dataset
         pd = PhaseFeaturesLoader(filename=test_dataset, phase_length=phase_length, batch_size=batch_size)
@@ -138,7 +155,7 @@ if __name__ == "__main__":
         # evaluate predictions
         accuracy = accuracy_score(test_y, predictions)
         print("Accuracy: %.2f%%" % (accuracy * 100.0))
-
+        print_report(loaded_model)
         # calculate the probability
         # y_pred = loaded_model.predict_proba(test_x)
         class_name = ["regP", "regS", "tele", "N"]
