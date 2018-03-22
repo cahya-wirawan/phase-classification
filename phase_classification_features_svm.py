@@ -8,13 +8,17 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
+from sklearn import svm
+from sklearn.externals import joblib
 from phase_utils import print_cm
 from phase_features_loader import PhaseFeaturesLoader
 from phase_model_simple import model_simple
 from phase_model_resnet import model_resnet
 from phase_model_xgboost import model_xgboost
+from phase_model_svm import model_svm
 from imblearn.metrics import classification_report_imbalanced
 from imblearn.combine import SMOTETomek, SMOTEENN
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -25,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument("--test_dataset", default="data/phase/ml_features_test.csv",
                         help="set the path to the test dataset")
     parser.add_argument("-m", "--model", default=None,
-                        help="set the path to the pre-trained model/weights")
+                        help="set the path to the pre-trained or output model")
     parser.add_argument("--cv", type=bool, default=False,
                         help="enable / disable a full cross validation with n_splits=10")
     parser.add_argument("-b", "--batch_size", type=int, default=256,
@@ -74,12 +78,11 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     validation_split = 0.1
     if args.model is None:
-        model_file_path = "results/phase_weights_best_s_{}_l_{}_d_{}.hdf5".\
-            format("_".join(stations_lower), "_".join([str(layer) for layer in layers]), dropout)
+        model_file_path = "results/phase_svm.dat"
     else:
         model_file_path = args.model
 
-    model = model_xgboost
+    model = model_svm
 
     if args.action == "train":
         # load train dataset
@@ -101,20 +104,15 @@ if __name__ == "__main__":
             model = model(layers=layers, dropout=dropout, layer_number=10)
             print(model)
             train_x, train_y = pd.get_dataset(expand_dim=False, y_onehot=False)
-            sme = SMOTEENN(random_state=42)
-            train_x_res, train_y_res = sme.fit_sample(train_x, train_y)
+            #sme = SMOTEENN(random_state=42)
+            #train_x_res, train_y_res = sme.fit_sample(train_x, train_y)
             #class_weight = {0:1, 1:1, 2:1, 3:1}
             # train_x = np.reshape(train_x, (train_x.shape[0], train_x[2]))
             # train_y = np.reshape(train_y, (train_y.shape[0], train_y[2]))
-            model.fit(train_x_res, train_y_res)
+            model.fit(train_x, train_y)
 
             # save model to file
-            pickle.dump(model, open("bst_grid-phase_smoteenn.pickle.dat", "wb"))
-
-            print("Best accuracy obtained: {0}".format(model.best_score_))
-            print("Parameters:")
-            for key, value in model.best_params_.items():
-                print("\t{}: {}".format(key, value))
+            joblib.dump(model, model_file_path)
 
             # load test dataset
             pd = PhaseFeaturesLoader(filename=test_dataset, phase_length=phase_length, batch_size=batch_size)
@@ -131,8 +129,8 @@ if __name__ == "__main__":
         test_x, test_y = pd.get_dataset(expand_dim=False, y_onehot=False)
 
         # load model & weight
-        loaded_model = pickle.load(open("bst_grid-phase_smoteenn.pickle.dat", "rb"))
-        print("Loaded model from disk with best params: {}".format(loaded_model.best_params_))
+        loaded_model = joblib.load(model_file_path)
+        print("Loaded model: {}".format(loaded_model))
 
         y_pred = loaded_model.predict(test_x)
 
@@ -140,5 +138,8 @@ if __name__ == "__main__":
         # evaluate predictions
         accuracy = accuracy_score(test_y, predictions)
         print("Accuracy: %.2f%%" % (accuracy * 100.0))
+
+        # calculate the probability
+        # y_pred = loaded_model.predict_proba(test_x)
         class_name = ["regP", "regS", "tele", "N"]
         print(classification_report_imbalanced(test_y, predictions, target_names=class_name))
