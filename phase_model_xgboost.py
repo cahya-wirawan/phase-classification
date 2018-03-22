@@ -10,12 +10,12 @@ def model_xgboost(layers, dropout=0.1, layer_number=None):
     cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
     # set xgboost params
     params_grid = {
+        'max_depth': [4, 5, 6, 7],
+        'n_estimators': [i for i in range(85, 95, 1)],
+        'learning_rate': np.linspace(1e-16, 0.4, 10),
     }
 
     params_fixed = {
-        'max_depth': 4,
-        'n_estimators': 70,
-        'learning_rate': 0.333,
         'objective': 'multi:softprob',
         'silent': 1,
         'n_jobs': 10,
