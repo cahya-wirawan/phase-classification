@@ -19,7 +19,9 @@ def model_xgboost(layers, dropout=0.1, layer_number=None):
         'objective': 'multi:softprob',
         'silent': 1,
         'n_jobs': 10,
-        'verbose_eval': True
+        'verbose_eval': True,
+        'tree_method': 'gpu_hist', 
+        'predictor': 'gpu_predictor'
     }
 
     num_round = 30  # the number of training iterations
