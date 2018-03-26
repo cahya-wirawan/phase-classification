@@ -117,6 +117,12 @@ class PhaseFeaturesLoader(object):
         return np.array([[1 if y[i] == j else 0 for j in range(n_classes)]
                          for i in range(len(y))])
 
+    def get_ids(self):
+        ids = self.df[(self.df['ARID'].isin(self.ids))]['ARID'].values
+        np.random.seed(self.random_state)
+        np.random.shuffle(ids)
+        return ids
+
     def get_dataset(self, expand_dim=True, y_onehot=True):
         """
         :param phase_length:
