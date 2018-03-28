@@ -123,6 +123,10 @@ class PhaseFeaturesLoader(object):
         np.random.shuffle(ids)
         return ids
 
+    def get_phase_index(self, arid):
+        phase = self.df[(self.df['ARID'] == arid)]["CLASS_PHASE"].values[0]
+        return PhaseFeaturesLoader.phase_index[phase]
+
     def get_dataset(self, expand_dim=True, y_onehot=True):
         """
         :param phase_length:
@@ -155,7 +159,12 @@ class PhaseFeaturesLoader(object):
 
 
 if __name__ == "__main__":
-    phase_dataset = PhaseFeaturesLoader(filename="data/phase/ml_features.csv", batch_size=10)
+    phase_dataset = PhaseFeaturesLoader(filename="data/phase/ml_features_test.csv", 
+			phase_length={"URZ":{'regP': 10000, 'regS': 10000, 'tele': 10000, 'N': 30000}},                    
+			batch_size=10)
+    phase = phase_dataset.get_phase_index(100118132)
+    print(phase)
+    exit()
     ds = []
     x = phase_dataset.generate
     counter = 0
