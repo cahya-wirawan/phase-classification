@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import time
 
 class PhaseFeaturesLoader(object):
     """
@@ -24,6 +25,13 @@ class PhaseFeaturesLoader(object):
         self.random_state = random_state
         self.df = pd.read_csv(filepath_or_buffer=filename)
         self.phase_length = {"URZ":{'regP': 100, 'regS': 100, 'tele': 100, 'N': 300}}
+
+        #for i, p in enumerate(PhaseFeaturesLoader.phases):
+        #  self.df.loc[self.df["CLASS_PHASE"]==p, ('SLOW')] = i
+        #self.df.loc[self.df["CLASS_PHASE"]=="N", ('SLOW')] = 1.0
+        #self.df.loc[self.df["CLASS_PHASE"]!="N", ('SLOW')] = 0.0
+        self.df.loc[:, ('SLOW')] = [time.localtime(row["TIME"]).tm_hour for i, row in self.df.iterrows()]
+
         if phase_length is not None:
             self.phase_length = phase_length
         self.manual = manual
