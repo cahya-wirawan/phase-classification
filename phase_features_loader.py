@@ -8,12 +8,9 @@ class PhaseFeaturesLoader(object):
     """
     phases = ['regP', 'regS', 'tele', 'N']
     phase_index = {'regP':0, 'regS':1, 'tele':2, 'N':3}
-    x_indices = ['INANG1', 'INANG3', 'HMXMN', 'HVRATP', 'HVRAT', 'HTOV1', 'HTOV2', 'HTOV3', 'HTOV4', 'HTOV5',
-                 'PER', 'RECT', 'PLANS', 'NAB', 'TAB', 'SLOW']
-    y_indices = ['CLASS_PHASE']
 
     def __init__(self, filename, random_state=1, dim_x=16, batch_size=32, shuffle=True, validation_split=0.1,
-                 phase_length=None, manual=False):
+                 phase_length=None, manual=False, x_indices=None, y_indices=None):
         """
         :param filename:
         :param random_state:
@@ -25,12 +22,22 @@ class PhaseFeaturesLoader(object):
         self.random_state = random_state
         self.df = pd.read_csv(filepath_or_buffer=filename)
         self.phase_length = {"URZ":{'regP': 100, 'regS': 100, 'tele': 100, 'N': 300}}
+        if x_indices is None:
+            self.x_indices = ['INANG1', 'INANG3', 'HMXMN', 'HVRATP', 'HVRAT', 'HTOV1', 'HTOV2', 'HTOV3', 'HTOV4', 'HTOV5',
+                              'PER', 'RECT', 'PLANS', 'NAB', 'TAB', 'TIME']
+        else:
+            self.x_indices = x_indices
+        if y_indices is None:
+            self.y_indices = ['CLASS_PHASE']
+        else:
+            self.y_indices = y_indices
 
         #for i, p in enumerate(PhaseFeaturesLoader.phases):
         #  self.df.loc[self.df["CLASS_PHASE"]==p, ('SLOW')] = i
         #self.df.loc[self.df["CLASS_PHASE"]=="N", ('SLOW')] = 1.0
         #self.df.loc[self.df["CLASS_PHASE"]!="N", ('SLOW')] = 0.0
-        self.df.loc[:, ('SLOW')] = [time.localtime(row["TIME"]).tm_hour for i, row in self.df.iterrows()]
+        self.df.loc[:, ('TIME')] = [time.localtime(row["TIME"]).tm_hour*60 + time.localtime(row["TIME"]).tm_min
+                                    for i, row in self.df.iterrows()]
 
         if phase_length is not None:
             self.phase_length = phase_length
@@ -102,11 +109,11 @@ class PhaseFeaturesLoader(object):
         y = np.empty((self.batch_size), dtype=int)
 
         # Generate data
-        X[:, :] = self.df[(self.df['ARID'].isin(ids))][PhaseFeaturesLoader.x_indices].values
+        X[:, :] = self.df[(self.df['ARID'].isin(ids))][self.x_indices].values
         # normalize the values:
         X[:, 0:2] /= 90.0
         X[:, 2:10] = np.log10(X[:, 2:10])
-        phases = self.df[(self.df['ARID'].isin(ids))][PhaseFeaturesLoader.y_indices].values
+        phases = self.df[(self.df['ARID'].isin(ids))][self.y_indices].values
         y = [PhaseFeaturesLoader.phase_index[p[0]] for p in phases]
         one_hot = self.sparsify(y, 4)
         return X, one_hot
@@ -144,11 +151,11 @@ class PhaseFeaturesLoader(object):
         :return:
         """
 
-        dataset_x = self.df[(self.df['ARID'].isin(self.ids))][PhaseFeaturesLoader.x_indices].values
+        dataset_x = self.df[(self.df['ARID'].isin(self.ids))][self.x_indices].values
         # normalize the values:
         dataset_x[:, 0:2] /= 90.0
         dataset_x[:, 2:10] = np.log10(dataset_x[:, 2:10])
-        dataset_y = self.df[(self.df['ARID'].isin(self.ids))][PhaseFeaturesLoader.y_indices].values.tolist()
+        dataset_y = self.df[(self.df['ARID'].isin(self.ids))][self.y_indices].values.tolist()
         dataset_y = np.array([PhaseFeaturesLoader.phase_index[y[0]] for y in dataset_y])
         if y_onehot:
             dataset_y = self.sparsify(dataset_y, len(PhaseFeaturesLoader.phases))
