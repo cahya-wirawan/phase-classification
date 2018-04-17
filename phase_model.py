@@ -73,7 +73,7 @@ class Classifier(ABC):
 
 
 class NN(Classifier):
-    def __init__(self, epochs=500, n_features=16, layers=None, dropout=0.2,
+    def __init__(self, epochs=1000, n_features=16, layers=None, dropout=0.2,
                  batch_size=1024, model_file_path = "results/phase_nn.hdf5"):
         super().__init__()
         self.model = None
