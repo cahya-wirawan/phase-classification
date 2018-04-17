@@ -73,7 +73,7 @@ class Classifier(ABC):
 
 
 class NN(Classifier):
-    def __init__(self, epochs=100, n_features=16, layers=None, dropout=0.2,
+    def __init__(self, epochs=500, n_features=16, layers=None, dropout=0.2,
                  batch_size=1024, model_file_path = "results/phase_nn.hdf5"):
         super().__init__()
         self.model = None
@@ -157,7 +157,7 @@ class SVM(Classifier):
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = SVM.create_model()
+        self.model = SVM.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
@@ -217,7 +217,7 @@ class XGBoost(Classifier):
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = XGBoost.create_model()
+        self.model = XGBoost.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
@@ -253,7 +253,7 @@ class GCForest(Classifier):
         self.model = None
 
     @staticmethod
-    def create_model():
+    def create_model(param):
         config = {
             "cascade": {
                 "random_state": 0,
@@ -276,7 +276,7 @@ class GCForest(Classifier):
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = GCForest.create_model()
+        self.model = GCForest.create_model({})
         print(self.model)
         self.model.fit_transform(x_train, y_train)
 
@@ -304,13 +304,13 @@ class AutoML(Classifier):
         self.model = None
 
     @staticmethod
-    def create_model():
+    def create_model(param):
         model = autosklearn.classification.AutoSklearnClassifier()
         return model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = AutoML.create_model()
+        self.model = AutoML.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
