@@ -2,7 +2,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Dropout
 from keras.layers import Dense
-#from keras.wrappers.scikit_learn import KerasClassifier
+from keras.wrappers.scikit_learn import KerasClassifier
 from keras.callbacks import ModelCheckpoint, TensorBoard
 from keras.models import load_model
 from sklearn import svm
@@ -73,7 +73,7 @@ class Classifier(ABC):
 
 
 class NN(Classifier):
-    def __init__(self, epochs=1000, n_features=16, layers=None, dropout=0.2,
+    def __init__(self, epochs=2000, n_features=16, layers=None, dropout=0.2,
                  batch_size=1024, model_file_path = "results/phase_nn.hdf5"):
         super().__init__()
         self.model = None
@@ -86,7 +86,7 @@ class NN(Classifier):
             self.layers = [32, 32]
 
     @staticmethod
-    def create_model(param):
+    def create_model(param=None):
         # create model
         model = Sequential()
         model.add(Dense(param["layers"][0], input_shape=(1, param["n_features"]), activation='relu'))
@@ -103,7 +103,7 @@ class NN(Classifier):
     def set_layers(self, layers):
         self.layers = layers
 
-    def fit(self, x_train, y_train, verbose=0, sampling_type=None):
+    def fit(self, x_train, y_train, verbose=0, sampling_type=None, cv=False):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
         x_train = np.expand_dims(x_train, axis=1)
         y_train = Classifier.sparsify(y_train)
@@ -111,14 +111,22 @@ class NN(Classifier):
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(self.model_file_path, monitor='acc', verbose=verbose,
                                      save_best_only=True, mode='max')
-        self.model = NN.create_model({"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
-        history = self.model.fit(x=x_train, y=y_train, batch_size=self.batch_size, epochs=self.epochs, verbose=verbose,
-                                 validation_split=0.1, callbacks=[checkpoint, tensorboard])
+        if cv:
 
-        print("Max of acc: {}, val_acc: {}".
-              format(max(history.history["acc"]), max(history.history["val_acc"])))
-        print("Min of loss: {}, val_loss: {}".
-              format(min(history.history["loss"]), min(history.history["val_loss"])))
+            kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+            estimator = KerasClassifier(build_fn=NN.create_model,
+                                        param={"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
+            results = cross_val_score(estimator, x_train, y_train, cv=kfold,
+                                      fit_params={'callbacks':[checkpoint, tensorboard]})
+            print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
+        else:
+            self.model = NN.create_model({"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
+            history = self.model.fit(x=x_train, y=y_train, batch_size=self.batch_size, epochs=self.epochs, verbose=verbose,
+                                     validation_split=0.1, callbacks=[checkpoint, tensorboard])
+            print("Max of acc: {}, val_acc: {}".
+                  format(max(history.history["acc"]), max(history.history["val_acc"])))
+            print("Min of loss: {}, val_loss: {}".
+                  format(min(history.history["loss"]), min(history.history["val_loss"])))
 
     def predict(self, x_test, y_test=None, sampling_type=None):
         x_test, y_test = Classifier.resample(x_test, y_test, sampling_type)
