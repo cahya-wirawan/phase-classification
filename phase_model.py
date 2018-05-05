@@ -73,7 +73,7 @@ class Classifier(ABC):
 
 
 class NN(Classifier):
-    def __init__(self, epochs=2000, n_features=16, layers=None, dropout=0.2,
+    def __init__(self, epochs=2000, n_features=16, layers=None, dropout=0.2, seed=1,
                  batch_size=1024, model_file_path = "results/phase_nn.hdf5"):
         super().__init__()
         self.model = None
@@ -82,6 +82,7 @@ class NN(Classifier):
         self.epochs = epochs
         self.batch_size = batch_size
         self.model_file_path = model_file_path
+        self.seed = seed
         if layers is None:
             self.layers = [32, 32]
 
@@ -113,7 +114,7 @@ class NN(Classifier):
                                      save_best_only=True, mode='max')
         if cv:
 
-            kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+            kfold = KFold(n_splits=10, shuffle=True, random_state=self.seed)
             estimator = KerasClassifier(build_fn=NN.create_model,
                                         param={"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
             results = cross_val_score(estimator, x_train, y_train, cv=kfold,
