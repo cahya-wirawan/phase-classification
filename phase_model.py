@@ -90,7 +90,7 @@ class NN(Classifier):
     def create_model(param=None):
         # create model
         model = Sequential()
-        model.add(Dense(param["layers"][0], input_shape=(1, param["n_features"]), activation='relu'))
+        model.add(Dense(param["layers"][0], input_dim=param["n_features"], activation='relu'))
         model.add(Dropout(param["dropout"]))
         for units in param["layers"][1:]:
             model.add(Dense(units, activation='relu'))
@@ -106,16 +106,16 @@ class NN(Classifier):
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None, cv=False):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        x_train = np.expand_dims(x_train, axis=1)
+        #x_train = np.expand_dims(x_train, axis=1)
         y_train = Classifier.sparsify(y_train)
-        y_train = np.expand_dims(y_train, axis=1)
+        #y_train = np.expand_dims(y_train, axis=1)
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(self.model_file_path, monitor='acc', verbose=verbose,
                                      save_best_only=True, mode='max')
         if cv:
 
             kfold = KFold(n_splits=10, shuffle=True, random_state=self.seed)
-            estimator = KerasClassifier(build_fn=NN.create_model,
+            estimator = KerasClassifier(build_fn=NN.create_model, epochs=self.epochs, batch_size=self.batch_size,
                                         param={"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
             results = cross_val_score(estimator, x_train, y_train, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
@@ -131,10 +131,10 @@ class NN(Classifier):
 
     def predict(self, x_test, y_test=None, sampling_type=None):
         x_test, y_test = Classifier.resample(x_test, y_test, sampling_type)
-        x_test = np.expand_dims(x_test, axis=1)
+        # x_test = np.expand_dims(x_test, axis=1)
         if y_test is not None:
             y_test = Classifier.sparsify(y_test)
-            y_test = np.expand_dims(y_test, axis=1)
+            # y_test = np.expand_dims(y_test, axis=1)
             score = self.model.evaluate(x_test, y_test, verbose=0)
             print("Accuracy: {}".format(score[1]*100))
         probability = self.model.predict(x_test, verbose=0)
