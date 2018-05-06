@@ -30,8 +30,8 @@ class Classifier(ABC):
     def class_name(self):
         return self.__class__.__name__
 
-    @staticmethod
-    def create_model(param):
+    @abstractmethod
+    def create_model(self, param):
         pass
 
     @abstractmethod
@@ -86,20 +86,19 @@ class NN(Classifier):
         if layers is None:
             self.layers = [32, 32]
 
-    @staticmethod
-    def create_model(param=None):
+    def create_model(self, param=None):
         # create model
-        model = Sequential()
-        model.add(Dense(param["layers"][0], input_dim=param["n_features"], activation='relu'))
-        model.add(Dropout(param["dropout"]))
+        self.model = Sequential()
+        self.model.add(Dense(param["layers"][0], input_dim=param["n_features"], activation='relu'))
+        self.model.add(Dropout(param["dropout"]))
         for units in param["layers"][1:]:
-            model.add(Dense(units, activation='relu'))
-            model.add(Dropout(param["dropout"]))
-        model.add(Dense(4, activation='softmax'))
+            self.model.add(Dense(units, activation='relu'))
+            self.model.add(Dropout(param["dropout"]))
+        self.model.add(Dense(4, activation='softmax'))
 
         # Compile model
-        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        return model
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        return self.model
 
     def set_layers(self, layers):
         self.layers = layers
@@ -115,13 +114,13 @@ class NN(Classifier):
         if cv:
 
             kfold = KFold(n_splits=10, shuffle=True, random_state=self.seed)
-            estimator = KerasClassifier(build_fn=NN.create_model, epochs=self.epochs, batch_size=self.batch_size,
+            estimator = KerasClassifier(build_fn=self.create_model, epochs=self.epochs, batch_size=self.batch_size,
                                         param={"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
             results = cross_val_score(estimator, x_train, y_train, cv=kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            self.model = NN.create_model({"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
+            self.create_model({"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
             history = self.model.fit(x=x_train, y=y_train, batch_size=self.batch_size, epochs=self.epochs, verbose=verbose,
                                      validation_split=0.1, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".
@@ -153,20 +152,19 @@ class SVM(Classifier):
         super().__init__()
         self.model = None
 
-    @staticmethod
-    def create_model(param):
+    def create_model(self, param):
         params_grid = [
             #{'C': [1, 10, 100, 1000], 'kernel': ['linear']},
             #{'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
             {'C': [1000], 'gamma': [0.001], 'kernel': ['rbf'], 'probability': [True]}
         ]
 
-        model = GridSearchCV(svm.SVC(), params_grid, cv=5, scoring='accuracy', n_jobs=-1)
-        return model
+        self.model = GridSearchCV(svm.SVC(), params_grid, cv=5, scoring='accuracy', n_jobs=-1)
+        return self.model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = SVM.create_model({})
+        self.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
@@ -193,8 +191,7 @@ class XGBoost(Classifier):
         super().__init__()
         self.model = None
 
-    @staticmethod
-    def create_model(param):
+    def create_model(self, param):
         seed = 10
         cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
         # set xgboost params
@@ -216,17 +213,17 @@ class XGBoost(Classifier):
 
         num_round = 30  # the number of training iterations
 
-        model = GridSearchCV(
+        self.model = GridSearchCV(
             estimator=xgb.XGBClassifier(**params_fixed, seed=seed),
             param_grid=params_grid,
             cv=cv,
             scoring='accuracy'
         )
-        return model
+        return self.model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = XGBoost.create_model({})
+        self.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
@@ -261,8 +258,7 @@ class GCForest(Classifier):
         super().__init__()
         self.model = None
 
-    @staticmethod
-    def create_model(param):
+    def create_model(self, param):
         config = {
             "cascade": {
                 "random_state": 0,
@@ -280,12 +276,12 @@ class GCForest(Classifier):
             }
         }
 
-        model = gcforest.gcforest.GCForest(config)
-        return model
+        self.model = gcforest.gcforest.GCForest(config)
+        return self.model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = GCForest.create_model({})
+        self.create_model({})
         print(self.model)
         self.model.fit_transform(x_train, y_train)
 
@@ -312,14 +308,13 @@ class AutoML(Classifier):
         super().__init__()
         self.model = None
 
-    @staticmethod
-    def create_model(param):
-        model = autosklearn.classification.AutoSklearnClassifier()
-        return model
+    def create_model(self, param):
+        self.model = autosklearn.classification.AutoSklearnClassifier()
+        return self.model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.model = AutoML.create_model({})
+        self.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
