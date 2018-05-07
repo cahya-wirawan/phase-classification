@@ -73,7 +73,7 @@ class Classifier(ABC):
 
 
 class NN(Classifier):
-    def __init__(self, epochs=2000, n_features=16, layers=None, dropout=0.2, seed=1,
+    def __init__(self, epochs=2000, n_features=16, layers=None, dropout=0.2, seed=1, cv=False,
                  batch_size=1024, model_file_path = "results/phase_nn.hdf5"):
         super().__init__()
         self.model = None
@@ -83,27 +83,35 @@ class NN(Classifier):
         self.batch_size = batch_size
         self.model_file_path = model_file_path
         self.seed = seed
+        self.cv = cv
         if layers is None:
             self.layers = [32, 32]
 
+        if self.cv:
+            self.kfold = KFold(n_splits=10, shuffle=True, random_state=self.seed)
+            self.estimator = KerasClassifier(build_fn=self.create_model, epochs=self.epochs, batch_size=self.batch_size,
+                                        param={"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
+        else:
+            self.model = self.create_model({"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
+
     def create_model(self, param=None):
         # create model
-        self.model = Sequential()
-        self.model.add(Dense(param["layers"][0], input_dim=param["n_features"], activation='relu'))
-        self.model.add(Dropout(param["dropout"]))
+        model = Sequential()
+        model.add(Dense(param["layers"][0], input_dim=param["n_features"], activation='relu'))
+        model.add(Dropout(param["dropout"]))
         for units in param["layers"][1:]:
-            self.model.add(Dense(units, activation='relu'))
-            self.model.add(Dropout(param["dropout"]))
-        self.model.add(Dense(4, activation='softmax'))
+            model.add(Dense(units, activation='relu'))
+            model.add(Dropout(param["dropout"]))
+        model.add(Dense(4, activation='softmax'))
 
         # Compile model
-        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        return self.model
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        return model
 
     def set_layers(self, layers):
         self.layers = layers
 
-    def fit(self, x_train, y_train, verbose=0, sampling_type=None, cv=False):
+    def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
         #x_train = np.expand_dims(x_train, axis=1)
         y_train = Classifier.sparsify(y_train)
@@ -111,18 +119,13 @@ class NN(Classifier):
         tensorboard = TensorBoard(log_dir='graph', histogram_freq=0, write_graph=True, write_images=True)
         checkpoint = ModelCheckpoint(self.model_file_path, monitor='acc', verbose=verbose,
                                      save_best_only=True, mode='max')
-        if cv:
-
-            kfold = KFold(n_splits=10, shuffle=True, random_state=self.seed)
-            estimator = KerasClassifier(build_fn=self.create_model, epochs=self.epochs, batch_size=self.batch_size,
-                                        param={"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
-            results = cross_val_score(estimator, x_train, y_train, cv=kfold,
+        if self.cv:
+            results = cross_val_score(self.estimator, x_train, y_train, cv=self.kfold,
                                       fit_params={'callbacks':[checkpoint, tensorboard]})
             print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
         else:
-            self.create_model({"layers": self.layers, "dropout": self.dropout, "n_features": self.n_features})
-            history = self.model.fit(x=x_train, y=y_train, batch_size=self.batch_size, epochs=self.epochs, verbose=verbose,
-                                     validation_split=0.1, callbacks=[checkpoint, tensorboard])
+            history = self.model.fit(x=x_train, y=y_train, batch_size=self.batch_size, epochs=self.epochs,
+                                     verbose=verbose, validation_split=0.1, callbacks=[checkpoint, tensorboard])
             print("Max of acc: {}, val_acc: {}".
                   format(max(history.history["acc"]), max(history.history["val_acc"])))
             print("Min of loss: {}, val_loss: {}".
@@ -150,7 +153,8 @@ class NN(Classifier):
 class SVM(Classifier):
     def __init__(self):
         super().__init__()
-        self.model = None
+        self.model = self.create_model({})
+
 
     def create_model(self, param):
         params_grid = [
@@ -159,12 +163,11 @@ class SVM(Classifier):
             {'C': [1000], 'gamma': [0.001], 'kernel': ['rbf'], 'probability': [True]}
         ]
 
-        self.model = GridSearchCV(svm.SVC(), params_grid, cv=5, scoring='accuracy', n_jobs=-1)
-        return self.model
+        model = GridSearchCV(svm.SVC(), params_grid, cv=5, scoring='accuracy', n_jobs=-1)
+        return model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
@@ -189,7 +192,7 @@ class SVM(Classifier):
 class XGBoost(Classifier):
     def __init__(self):
         super().__init__()
-        self.model = None
+        self.model = self.create_model({})
 
     def create_model(self, param):
         seed = 10
@@ -213,17 +216,16 @@ class XGBoost(Classifier):
 
         num_round = 30  # the number of training iterations
 
-        self.model = GridSearchCV(
+        model = GridSearchCV(
             estimator=xgb.XGBClassifier(**params_fixed, seed=seed),
             param_grid=params_grid,
             cv=cv,
             scoring='accuracy'
         )
-        return self.model
+        return model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
@@ -256,7 +258,7 @@ class XGBoost(Classifier):
 class GCForest(Classifier):
     def __init__(self):
         super().__init__()
-        self.model = None
+        self.model = self.create_model({})
 
     def create_model(self, param):
         config = {
@@ -276,12 +278,11 @@ class GCForest(Classifier):
             }
         }
 
-        self.model = gcforest.gcforest.GCForest(config)
-        return self.model
+        model = gcforest.gcforest.GCForest(config)
+        return model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.create_model({})
         print(self.model)
         self.model.fit_transform(x_train, y_train)
 
@@ -306,15 +307,14 @@ class GCForest(Classifier):
 class AutoML(Classifier):
     def __init__(self):
         super().__init__()
-        self.model = None
+        self.model = self.create_model({})
 
     def create_model(self, param):
-        self.model = autosklearn.classification.AutoSklearnClassifier()
-        return self.model
+        model = autosklearn.classification.AutoSklearnClassifier()
+        return model
 
     def fit(self, x_train, y_train, verbose=0, sampling_type=None):
         x_train, y_train = Classifier.resample(x_train, y_train, sampling_type)
-        self.create_model({})
         print(self.model)
         self.model.fit(x_train, y_train)
 
