@@ -31,11 +31,12 @@ x_train, y_train = pd_train.get_dataset(expand_dim=False, y_onehot=False)
 # load test dataset
 # phase_length = {"URZ": {"regP": 150, "regS": 150, "tele": 150, "N": 150*3}}
 phase_length = {"URZ": {"regP": 2280, "regS": 2280, "tele": 2280, "N": 2280*3}}
-pd_test = PhaseFeaturesLoader(filename=dataset_test, phase_length=phase_length, batch_size=batch_size)
+pd_test = PhaseFeaturesLoader(filename=dataset_test, phase_length=phase_length, batch_size=batch_size, x_indices=x_indices)
 x_test, y_test = pd_test.get_dataset(expand_dim=False, y_onehot=False)
 # print(pd_test.get_phase_index(100089180))
 
-classifiers = ["NN", "SVM", "XGBoost", "GCForest", "AutoML"]
+#classifiers = ["NN", "SVM", "XGBoost", "GCForest", "AutoML"]
+classifiers = ["NN"]
 classifier_index = {classifier: i for i, classifier in enumerate(classifiers)}
 functions = globals().copy()
 classifier_class = {c: getattr(sys.modules["phase_model"], c) for c in classifiers}
