@@ -1,4 +1,5 @@
 import sys
+import time
 import phase_model as pm
 from phase_features_loader import PhaseFeaturesLoader
 
@@ -48,7 +49,10 @@ def run_model_train_predict_all():
         print(classifier_class[name])
         clf = classifier_class[name]()
         sampling_type="nosampling"
+        time_start = time.time()
         clf.fit(x_train, y_train, verbose=1, sampling_type=sampling_type)
+        time_end = time.time()
+        print("Training time: {} seconds".format(time_end - time_start))
         clf.save("results/phase_train_{}_{}.mdl".format(clf.class_name().lower(), sampling_type))
         clf.predict(x_test, y_test, sampling_type=sampling_type)
 

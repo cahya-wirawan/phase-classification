@@ -233,14 +233,16 @@ class XGBoost(Classifier):
         x_test, y_test = Classifier.resample(x_test, y_test, sampling_type)
         probability = self.model.predict_proba(x_test)
         print(y_test.shape)
-        y_list = np.zeros(4, dtype=int)
+        # y_list = np.zeros(4, dtype=int)
         if y_test is not None:
+            """
             for i in range(10):
                 print(y_test[len(y_test)-i-1], probability[len(y_test)-i-1])
                 print(x_test[len(y_test)-i-1])
             for i in range(len(y_test)):
                 y_list[y_test[i]] += 1
             print(y_list)
+            """
             y_pred = self.model.predict(x_test)
             prediction = [np.round(value) for value in y_pred]
             # evaluate predictions
