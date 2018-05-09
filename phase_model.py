@@ -211,7 +211,9 @@ class XGBoost(Classifier):
             'objective': 'multi:softprob',
             'silent': 1,
             'n_jobs': -1,
-            'verbose_eval': True
+            'verbose_eval': True,
+            # enable GPU support:
+            'tree_method': 'gpu_hist'
         }
 
         num_round = 30  # the number of training iterations
